@@ -1,9 +1,5 @@
 /**
  * Typed client for ri-api.
- *
- * All responses use the API's envelope: { success, data, message, error }.
- * A 401 triggers one silent refresh-and-retry before the session is dropped,
- * so a 15-minute access token never interrupts someone mid-task.
  */
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
@@ -141,7 +137,9 @@ function qs(params: Record<string, string | number | boolean | undefined | null>
 
 // ---------------------------------------------------------------- types
 
-export type Role = 'admin' | 'editor' | 'viewer';
+export type Role = 'admin' | 'approver' | 'editor' | 'viewer';
+
+export type Scopes = { programs: string[]; metrics: string[] };
 
 export type User = {
   id: string;
@@ -150,6 +148,27 @@ export type User = {
   fullName: string;
   email: string;
   role: Role;
+  isActive?: boolean;
+  lastLogin?: string | null;
+  status?: 'active' | 'invited' | 'disabled';
+  invitedAt?: string | null;
+  scopes?: Scopes;
+  /** How much of the record this person is attached to. */
+  footprint?: { facts: number; auditEntries: number };
+};
+
+export type Invite = { url: string; expiresAt: string };
+
+export type AuditEntry = {
+  _id: string;
+  action: string;
+  entityType: string;
+  summary: string | null;
+  createdAt: string;
+  ip: string | null;
+  before: unknown;
+  after: unknown;
+  actor: { firstName: string; lastName: string; email: string; role: Role } | null;
 };
 
 export type ProgramNode = {
@@ -216,6 +235,160 @@ export type ProgramSummary = {
   metrics: MetricSummary[];
 };
 
+/**
+ * Period-over-period change. Null whenever the metric does not have two
+ * comparable years — the API refuses to compare an all-time total against one
+ * year's figure, so the UI shows no badge rather than a flattering one.
+ */
+export type Delta = {
+  from: number;
+  to: number;
+  fromYear: number;
+  toYear: number;
+  change: number;
+  percent: number;
+};
+
+export type ScorecardTotal = OrgTotal & {
+  delta: Delta | null;
+  series: Array<{ year: number; value: number }>;
+};
+
+export type CompareRow = {
+  pageKey: string | null;
+  name: string;
+  value: number;
+  basis: Basis;
+  derivedFrom: string[] | null;
+  share: number | null;
+};
+
+export type CompareGroupedRow = {
+  pageKey: string | null;
+  name: string;
+  total: number;
+  segments: Array<{ value: string; amount: number; share: number | null }>;
+};
+
+export type FunnelStage = {
+  key: string;
+  label: string;
+  unit: Unit;
+  value: number | null;
+  programCount: number;
+  basis: Basis;
+  /** Share of the stage immediately before this one, or null when that stage has no figure. */
+  conversion: number | null;
+};
+
+export type QualityReading = {
+  basis: string;
+  signature: string[];
+  value: number;
+  parts: number;
+};
+
+export type QualityIssue = {
+  kind: 'conflicting_values' | 'incomplete_breakdown' | 'reconciliation_failed';
+  severity: 'error' | 'warning';
+  title: string;
+  programPageKey: string | null;
+  programName: string;
+  metricKey?: string | null;
+  metricLabel?: string;
+  unit?: Unit;
+  period?: string;
+  spread?: number;
+  readings?: QualityReading[];
+  detail?: string;
+  sourceRef?: string;
+};
+
+export type QualityReport = {
+  issues: QualityIssue[];
+  counts: { total: number; errors: number; warnings: number };
+  coverage: {
+    metrics: Array<{ key: string; label: string; category: string }>;
+    programs: Array<{ pageKey: string; name: string; expected: string[]; recorded: string[] }>;
+  };
+};
+
+export type SheetSource = {
+  _id: string;
+  spreadsheetId: string;
+  spreadsheetTitle: string;
+  tabName: string;
+  program: { pageKey: string; name: string } | null;
+  isEnabled: boolean;
+  autoCommit: boolean;
+  maxChangePercent: number;
+  lastSyncedAt: string | null;
+  lastStatus: 'never_run' | 'synced' | 'needs_review' | 'failed';
+  lastMessage: string;
+};
+
+export type SheetTab = { name: string; rowCount: number; columnCount: number };
+
+export type SheetInspection = {
+  title: string;
+  tabs: SheetTab[];
+  suggestion: {
+    suggestion: { confidence: 'high' | 'medium' | 'low'; layout: string; notes: string[] } & Record<string, unknown>;
+    rowCount: number;
+    columnCount: number;
+    preview: {
+      rows: Array<{ row: number; cells: Array<{ address: string; value: string | number | null; isNumber: boolean }> }>;
+      truncated: boolean;
+    };
+  } | null;
+};
+
+export type SheetDryRun = {
+  summary: { created: number; updated: number; unchanged: number; conflicts: number; errors: number; checksFailed: number };
+  checks: Array<{ label: string; expected: number; actual: number; difference: number; status: 'pass' | 'warn' | 'fail' }>;
+  issues: Array<{ severity: string; message: string }>;
+  wouldAutoCommit: boolean;
+  heldBecause: string[];
+  sample: Array<{ metric: string; period: string; dimensions: Record<string, string>; value: number; sourceRef: string }>;
+};
+
+export type Submission = {
+  id: string;
+  program: { pageKey: string; name: string } | null;
+  metric: { key: string; label: string; unit: Unit } | null;
+  periodLabel: string;
+  dimensions: Record<string, string>;
+  value: number;
+  currentValue: number | null;
+  change: number | null;
+  percent: number | null;
+  isFirstValue: boolean;
+  note: string | null;
+  status: 'pending' | 'approved' | 'returned';
+  submittedBy: { firstName: string; lastName: string; email: string } | null;
+  submittedAt: string;
+  reviewedBy: { firstName: string; lastName: string } | null;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+};
+
+export type HeldBatch = {
+  id: string;
+  fileName: string;
+  sheetName: string;
+  program: { pageKey: string; name: string } | null;
+  createdAt: string;
+  failedChecks: Array<{ label: string; expected: number; actual: number }>;
+  issues: Array<{ message: string }>;
+};
+
+export type ApprovalQueue = {
+  submissions: Submission[];
+  heldBatches: HeldBatch[];
+  counts: { pending: number; returned: number; heldBatches: number; total: number };
+  canReview: boolean;
+};
+
 export type DimensionValue = { value: string; label: string; order: number };
 export type Dimension = {
   name: string;
@@ -278,6 +451,55 @@ export const api = {
 
   me: () => request<{ user: User }>('/api/v1/auth/me'),
 
+  users: () => request<{ users: User[] }>('/api/v1/auth/users'),
+
+  submissions: (status = 'pending') =>
+    request<ApprovalQueue>(`/api/v1/submissions${qs({ status })}`),
+
+  approveSubmission: (id: string) =>
+    request<{ submission: Submission }>(`/api/v1/submissions/${id}/approve`, { method: 'POST' }),
+
+  returnSubmission: (id: string, note: string) =>
+    request<{ submission: Submission }>(`/api/v1/submissions/${id}/return`, {
+      method: 'POST',
+      body: { note },
+    }),
+
+  createUser: (body: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: Role;
+    password?: string;
+    scopes?: Scopes;
+  }) => request<{ user: User; invite: Invite | null }>('/api/v1/auth/users', { method: 'POST', body }),
+
+  revokeUser: (id: string) =>
+    request<{ user: User }>(`/api/v1/auth/users/${id}/revoke`, { method: 'POST' }),
+
+  deleteUser: (id: string) =>
+    request<{ footprint: { facts: number } }>(`/api/v1/auth/users/${id}`, { method: 'DELETE' }),
+
+  resendInvite: (id: string) =>
+    request<{ invite: Invite }>(`/api/v1/auth/users/${id}/invite`, { method: 'POST' }),
+
+  getInvite: (token: string) =>
+    request<{ firstName: string; lastName: string; email: string; role: Role }>(
+      `/api/v1/auth/invite/${token}`
+    ),
+
+  acceptInvite: (token: string, password: string) =>
+    request<{ user: User; accessToken: string; refreshToken: string }>(`/api/v1/auth/invite/${token}`, {
+      method: 'POST',
+      body: { password },
+    }),
+
+  updateUser: (id: string, body: Partial<{ role: Role; isActive: boolean; scopes: Scopes; password: string }>) =>
+    request<{ user: User }>(`/api/v1/auth/users/${id}`, { method: 'PUT', body }),
+
+  audit: (params: { action?: string; limit?: number } = {}) =>
+    request<{ entries: AuditEntry[]; actions: string[] }>(`/api/v1/audit${qs(params)}`),
+
   logout: () =>
     request<Record<string, never>>('/api/v1/auth/logout', {
       method: 'POST',
@@ -295,6 +517,48 @@ export const api = {
 
   orgTotals: (params: { year?: number } = {}) =>
     request<{ totals: OrgTotal[] }>(`/api/v1/facts/org-totals${qs(params)}`),
+
+  scorecard: (params: { year?: number } = {}) =>
+    request<{ totals: ScorecardTotal[]; years: number[] }>(`/api/v1/insights/scorecard${qs(params)}`),
+
+  compare: (params: { metric: string; year?: number }) =>
+    request<{ metric: { key: string; label: string; unit: Unit }; groupBy: null; total: number | null; rows: CompareRow[] }>(
+      `/api/v1/insights/compare${qs(params)}`
+    ),
+
+  compareGrouped: (params: { metric: string; groupBy: string; year?: number }) =>
+    request<{ metric: { key: string; label: string; unit: Unit }; groupBy: string; rows: CompareGroupedRow[] }>(
+      `/api/v1/insights/compare${qs(params)}`
+    ),
+
+  dataQuality: (params: { year?: number } = {}) =>
+    request<QualityReport>(`/api/v1/insights/data-quality${qs(params)}`),
+
+  sheets: () => request<{ sources: SheetSource[]; configured: boolean }>('/api/v1/sheets'),
+
+  inspectSheet: (params: { spreadsheetId: string; tabName?: string }) =>
+    request<SheetInspection>(`/api/v1/sheets/inspect${qs(params)}`),
+
+  dryRunSheet: (body: { spreadsheetId: string; tabName: string; program: string; mapping: unknown }) =>
+    request<SheetDryRun>('/api/v1/sheets/dry-run', { method: 'POST', body }),
+
+  connectSheet: (body: {
+    spreadsheetId: string;
+    tabName: string;
+    program: string;
+    mapping: unknown;
+    autoCommit?: boolean;
+    maxChangePercent?: number;
+  }) => request<{ source: SheetSource }>('/api/v1/sheets', { method: 'POST', body }),
+
+  sheetStatus: () =>
+    request<{ configured: boolean; serviceAccount: string | null }>('/api/v1/sheets/status'),
+
+  syncSheet: (id: string) =>
+    request<{ status: string }>(`/api/v1/sheets/${id}/sync`, { method: 'POST' }),
+
+  funnel: (params: { year?: number } = {}) =>
+    request<{ stages: FunnelStage[] }>(`/api/v1/insights/funnel${qs(params)}`),
 
   summary: (pageKey: string, params: { year?: number } = {}) =>
     request<ProgramSummary>(`/api/v1/facts/summary${qs({ program: pageKey, ...params })}`),

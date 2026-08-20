@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useCreateFact, useDimensions, useMetrics, usePrograms, flattenPrograms } from '../../hooks/useData';
-import { errorMessage, type Dimension, type ProgramNode } from '../../lib/api';
+import { errorMessage, type Dimension, type Metric, type ProgramNode } from '../../lib/api';
+import { formatValue } from '../../lib/format';
+import { Field, inputClass, selectClass } from '../ui/Field';
+import { Button } from '../ui/Button';
+import { CloseIcon } from '../ui/Icons';
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+type Step = 0 | 1 | 2;
+const STEP_TITLES = ['What are you recording?', 'Which period and slice?', 'The number'];
 
 /**
- * Manual entry — the path by which data is recorded from here on.
- *
- * The form is generated from the metric catalog: choosing a metric determines
- * which breakdowns are offered and how the value is labelled. Adding a metric
- * in the backend therefore makes it enterable here with no frontend change.
- *
- * Writes go through the append-only API, so saving over an existing figure
- * revises it and keeps the previous value in history rather than destroying it.
+ * Manual entry, as three short steps rather than one long form.
  */
 export function RecordFigureDialog({
   open,
@@ -28,49 +33,59 @@ export function RecordFigureDialog({
   const { data: dimensions = [] } = useDimensions();
   const createFact = useCreateFact();
 
-  const [metricKey, setMetricKey] = useState(initialMetric ?? '');
-  const [programKey, setProgramKey] = useState(initialProgram ?? '');
+  const [step, setStep] = useState<Step>(0);
+  const [metricKey, setMetricKey] = useState('');
+  const [programKey, setProgramKey] = useState('');
   const [periodType, setPeriodType] = useState<'all_time' | 'year' | 'month'>('all_time');
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [month, setMonth] = useState('1');
+  const [scope, setScope] = useState<'whole' | 'slice'>('whole');
+  const [dimensionValues, setDimensionValues] = useState<Record<string, string>>({});
   const [value, setValue] = useState('');
   const [note, setNote] = useState('');
-  const [dimensionValues, setDimensionValues] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    setStep(0);
     setMetricKey(initialMetric ?? '');
     setProgramKey(initialProgram ?? '');
+    setPeriodType('all_time');
+    setScope('whole');
+    setDimensionValues({});
     setValue('');
     setNote('');
-    setDimensionValues({});
-    setResult(null);
+    setSaved(null);
     createFact.reset();
   }, [open, initialMetric, initialProgram]);
 
-  // Only programmes that hold facts — container nodes roll up their children
-  // and the API rejects writes to them.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  // Container nodes roll up their children and the API rejects writes to them.
   const reportable = useMemo(
     () => flattenPrograms<ProgramNode>(programs).filter((p) => p.isReportable),
     [programs]
   );
 
   const metric = metrics.find((m) => m.key === metricKey);
+  const programme = reportable.find((p) => p.pageKey === programKey);
   const availableDimensions = useMemo(
     () => dimensions.filter((d) => metric?.allowedDimensions.includes(d.name)),
     [dimensions, metric]
   );
 
+  const chosenSlices = Object.entries(dimensionValues).filter(([, v]) => v !== '');
+
   if (!open) return null;
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    setResult(null);
-
-    const cleanedDimensions = Object.fromEntries(
-      Object.entries(dimensionValues).filter(([, v]) => v !== '')
-    );
+    setSaved(null);
 
     try {
       const response = await createFact.mutateAsync({
@@ -79,196 +94,431 @@ export function RecordFigureDialog({
         periodType,
         ...(periodType !== 'all_time' ? { year: Number(year) } : {}),
         ...(periodType === 'month' ? { month: Number(month) } : {}),
-        ...(Object.keys(cleanedDimensions).length ? { dimensions: cleanedDimensions } : {}),
+        ...(scope === 'slice' && chosenSlices.length ? { dimensions: Object.fromEntries(chosenSlices) } : {}),
         value: Number(value),
         ...(note ? { note } : {}),
       });
 
-      setResult(
+      setSaved(
         response.outcome === 'unchanged'
           ? 'That figure was already recorded — nothing changed.'
           : response.outcome === 'updated'
             ? 'Figure revised. The previous value is kept in history.'
             : 'Figure recorded.'
       );
-      setValue('');
     } catch {
-      // Surfaced from the mutation's error state below.
     }
   }
 
-  const canSubmit = metricKey && programKey && value !== '' && !createFact.isPending;
+  const canAdvance =
+    step === 0
+      ? Boolean(metricKey && programKey)
+      : step === 1
+        ? scope === 'whole' || chosenSlices.length > 0
+        : true;
+  const canSave = Boolean(metricKey && programKey && value !== '') && !createFact.isPending;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-8">
-      <button type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 bg-slate-900/40" />
+      <button type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 bg-on-surface/40" />
 
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="record-figure-title"
-        className="relative w-full max-w-lg rounded-xl border border-slate-200 bg-surface shadow-soft"
+        className="relative w-full max-w-[560px] rounded-lg border border-outline-variant bg-surface-container-lowest shadow-floating"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
-          <div>
-            <h2 id="record-figure-title" className="text-sm font-semibold text-ink">
+        <div className="flex items-start justify-between gap-4 border-b border-outline-variant px-6 pb-4 pt-5">
+          <div className="min-w-0">
+            <h2 id="record-figure-title" className="text-section-header text-on-surface">
               Record a figure
             </h2>
-            <p className="mt-0.5 text-xs text-ink-secondary">
-              Saved figures are versioned — revising one keeps the old value in history.
+            <p className="mt-1 text-secondary-text text-on-surface-variant">
+              Step {step + 1} of 3 — {STEP_TITLES[step]}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1.5 text-ink-muted transition hover:bg-slate-100"
+            className="-mr-1 shrink-0 rounded-md p-1.5 text-on-surface-muted transition hover:bg-surface-variant hover:text-on-surface"
           >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4 px-5 py-4">
-          <Field label="Metric" htmlFor="metric">
-            <select id="metric" required value={metricKey} onChange={(e) => { setMetricKey(e.target.value); setDimensionValues({}); }} className={selectClass}>
-              <option value="">Choose a metric…</option>
-              {metrics.map((m) => (
-                <option key={m.key} value={m.key}>
-                  {m.headlineLabel ?? m.label}
-                </option>
-              ))}
-            </select>
-            {metric?.description ? (
-              <p className="mt-1 text-[0.68rem] leading-snug text-ink-muted">{metric.description}</p>
+        <div className="flex gap-1.5 px-6 pt-4">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-primary' : 'bg-surface-variant'}`}
+            />
+          ))}
+        </div>
+
+        {saved ? (
+          <Saved
+            message={saved}
+            summary={
+              <Summary
+                metric={metric}
+                programme={programme?.name}
+                periodType={periodType}
+                year={year}
+                month={month}
+                scope={scope}
+                slices={chosenSlices}
+                dimensions={dimensions}
+                value={value}
+              />
+            }
+            onAnother={() => {
+              setValue('');
+              setNote('');
+              setSaved(null);
+              setStep(2);
+              createFact.reset();
+            }}
+            onClose={onClose}
+          />
+        ) : (
+          <form onSubmit={onSubmit} className="flex flex-col gap-5 px-6 py-5">
+            {step === 0 ? (
+              <>
+                <Field label="Which figure?" htmlFor="metric" hint={metric?.description ?? undefined}>
+                  <select
+                    id="metric"
+                    value={metricKey}
+                    onChange={(e) => {
+                      setMetricKey(e.target.value);
+                      setDimensionValues({});
+                      setScope('whole');
+                    }}
+                    className={selectClass}
+                  >
+                    <option value="">Choose…</option>
+                    {metrics.map((m) => (
+                      <option key={m.key} value={m.key}>
+                        {m.headlineLabel ?? m.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="For which programme?" htmlFor="program">
+                  <select
+                    id="program"
+                    value={programKey}
+                    onChange={(e) => setProgramKey(e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="">Choose…</option>
+                    {reportable.map((p) => (
+                      <option key={p.pageKey} value={p.pageKey}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </>
             ) : null}
-          </Field>
 
-          <Field label="Programme" htmlFor="program">
-            <select id="program" required value={programKey} onChange={(e) => setProgramKey(e.target.value)} className={selectClass}>
-              <option value="">Choose a programme…</option>
-              {reportable.map((p) => (
-                <option key={p.pageKey} value={p.pageKey}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+            {step === 1 ? (
+              <>
+                <Field label="Which period does it cover?" htmlFor="periodType">
+                  <div className="flex gap-2">
+                    <select
+                      id="periodType"
+                      value={periodType}
+                      onChange={(e) => setPeriodType(e.target.value as typeof periodType)}
+                      className={selectClass}
+                    >
+                      <option value="all_time">All time</option>
+                      <option value="year">A whole year</option>
+                      <option value="month">A single month</option>
+                    </select>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Period" htmlFor="periodType">
-              <select id="periodType" value={periodType} onChange={(e) => setPeriodType(e.target.value as typeof periodType)} className={selectClass}>
-                <option value="all_time">All time</option>
-                <option value="year">A year</option>
-                <option value="month">A month</option>
-              </select>
-            </Field>
+                    {periodType === 'month' ? (
+                      <select value={month} onChange={(e) => setMonth(e.target.value)} className={selectClass}>
+                        {MONTHS.map((name, index) => (
+                          <option key={name} value={index + 1}>
+                            {name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : null}
 
-            {periodType !== 'all_time' ? (
-              <Field label="Year" htmlFor="year">
-                <input id="year" type="number" min={2000} max={2100} value={year} onChange={(e) => setYear(e.target.value)} className={inputClass} />
-              </Field>
+                    {periodType !== 'all_time' ? (
+                      <input
+                        type="number"
+                        min={2000}
+                        max={2100}
+                        value={year}
+                        onChange={(e) => setYear(e.target.value)}
+                        aria-label="Year"
+                        className={`${inputClass} w-28 tnum`}
+                      />
+                    ) : null}
+                  </div>
+                </Field>
+
+                {availableDimensions.length > 0 ? (
+                  <fieldset className="flex flex-col gap-3">
+                    <legend className="mb-1 text-secondary-text font-medium text-on-surface">
+                      Is this the whole programme, or one slice of it?
+                    </legend>
+
+                    <ScopeOption
+                      checked={scope === 'whole'}
+                      onChange={() => {
+                        setScope('whole');
+                        setDimensionValues({});
+                      }}
+                      title={`The whole of ${programme?.name ?? 'the programme'}`}
+                      hint="One overall figure covering everyone."
+                    />
+                    <ScopeOption
+                      checked={scope === 'slice'}
+                      onChange={() => setScope('slice')}
+                      title="One slice of it"
+                      hint={`Just ${availableDimensions.map((d) => d.label.toLowerCase()).slice(0, 3).join(', ')}${
+                        availableDimensions.length > 3 ? ', …' : ''
+                      } — record each slice separately and totals add up on their own.`}
+                    />
+
+                    {scope === 'slice' ? (
+                      <div className="grid grid-cols-1 gap-3 rounded-md border border-outline-variant p-4 sm:grid-cols-2">
+                        {availableDimensions.map((dimension) => (
+                          <DimensionInput
+                            key={dimension.name}
+                            dimension={dimension}
+                            value={dimensionValues[dimension.name] ?? ''}
+                            onChange={(next) =>
+                              setDimensionValues((prev) => ({ ...prev, [dimension.name]: next }))
+                            }
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </fieldset>
+                ) : null}
+              </>
             ) : null}
-          </div>
 
-          {periodType === 'month' ? (
-            <Field label="Month" htmlFor="month">
-              <select id="month" value={month} onChange={(e) => setMonth(e.target.value)} className={selectClass}>
-                {MONTHS.map((name, index) => (
-                  <option key={name} value={index + 1}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          ) : null}
-
-          {availableDimensions.length > 0 ? (
-            <fieldset className="rounded-lg border border-slate-200 p-3">
-              <legend className="px-1 text-[0.68rem] font-semibold uppercase tracking-wide text-ink-muted">
-                Breakdown (optional)
-              </legend>
-              <p className="mb-2 text-[0.68rem] leading-snug text-ink-muted">
-                Leave blank to record the programme's overall figure. Choose a value to record just
-                that slice — totals are calculated from whichever you record.
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {availableDimensions.map((dimension) => (
-                  <DimensionInput
-                    key={dimension.name}
-                    dimension={dimension}
-                    value={dimensionValues[dimension.name] ?? ''}
-                    onChange={(next) =>
-                      setDimensionValues((prev) => ({ ...prev, [dimension.name]: next }))
-                    }
+            {step === 2 ? (
+              <>
+                <Field
+                  label={
+                    metric?.unit === 'percent'
+                      ? 'What is the figure? (%)'
+                      : metric?.unit === 'currency'
+                        ? 'What is the figure? (USD)'
+                        : 'What is the figure?'
+                  }
+                  htmlFor="value"
+                >
+                  <input
+                    id="value"
+                    type="number"
+                    step="any"
+                    autoFocus
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    className={`${inputClass} tnum text-[20px] font-semibold`}
                   />
-                ))}
-              </div>
-            </fieldset>
-          ) : null}
+                </Field>
 
-          <Field label={metric?.unit === 'percent' ? 'Value (%)' : metric?.unit === 'currency' ? 'Value (USD)' : 'Value'} htmlFor="value">
-            <input
-              id="value"
-              type="number"
-              step="any"
-              required
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
+                <Field label="Where did it come from? (optional)" htmlFor="note">
+                  <input
+                    id="note"
+                    type="text"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="e.g. Cohort 6 registry, checked 11 August"
+                    className={inputClass}
+                  />
+                </Field>
+              </>
+            ) : null}
 
-          <Field label="Note (optional)" htmlFor="note">
-            <input
-              id="note"
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Where this figure came from"
-              className={inputClass}
-            />
-          </Field>
+            <div className="rounded-md bg-surface p-4">
+              <p className="text-label-caps uppercase text-on-surface-muted">You are recording</p>
+              <p className="mt-1.5 text-body-text leading-relaxed text-on-surface">
+                <Summary
+                  metric={metric}
+                  programme={programme?.name}
+                  periodType={periodType}
+                  year={year}
+                  month={month}
+                  scope={scope}
+                  slices={chosenSlices}
+                  dimensions={dimensions}
+                  value={value}
+                />
+              </p>
+            </div>
 
-          {createFact.isError ? (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-              {errorMessage(createFact.error)}
-            </p>
-          ) : null}
+            {createFact.isError ? (
+              <p
+                role="alert"
+                className="rounded-md border border-status-danger/30 bg-status-danger-container px-3 py-2 text-secondary-text text-status-on-danger-container"
+              >
+                {errorMessage(createFact.error)}
+              </p>
+            ) : null}
 
-          {result ? (
-            <p role="status" className="rounded-lg bg-brand-tint px-3 py-2 text-xs text-brand-dark">
-              {result}
-            </p>
-          ) : null}
+            <div className="-mx-6 -mb-5 flex items-center justify-between gap-3 border-t border-outline-variant px-6 py-4">
+              <Button variant="ghost" onClick={step === 0 ? onClose : () => setStep((s) => (s - 1) as Step)}>
+                {step === 0 ? 'Cancel' : 'Back'}
+              </Button>
 
-          <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
-            <button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-ink-secondary transition hover:bg-slate-50">
-              Done
-            </button>
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
-            >
-              {createFact.isPending ? 'Saving…' : 'Save figure'}
-            </button>
-          </div>
-        </form>
+              {step < 2 ? (
+                <Button variant="primary" disabled={!canAdvance} onClick={() => setStep((s) => (s + 1) as Step)}>
+                  Continue
+                </Button>
+              ) : (
+                <Button type="submit" variant="primary" disabled={!canSave}>
+                  {createFact.isPending ? 'Saving…' : 'Save figure'}
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Plain-English restatement of the coordinate about to be written. */
+function Summary({
+  metric,
+  programme,
+  periodType,
+  year,
+  month,
+  scope,
+  slices,
+  dimensions,
+  value,
+}: {
+  metric: Metric | undefined;
+  programme: string | undefined;
+  periodType: 'all_time' | 'year' | 'month';
+  year: string;
+  month: string;
+  scope: 'whole' | 'slice';
+  slices: Array<[string, string]>;
+  dimensions: Dimension[];
+  value: string;
+}) {
+  if (!metric || !programme) return <span className="text-on-surface-muted">Choose a figure and a programme.</span>;
+
+  const period =
+    periodType === 'all_time' ? 'all time' : periodType === 'year' ? year : `${MONTHS[Number(month) - 1]} ${year}`;
+
+  const sliceText =
+    scope === 'slice' && slices.length
+      ? slices
+          .map(([name, raw]) => {
+            const dimension = dimensions.find((d) => d.name === name);
+            const label = dimension?.values.find((v) => v.value === raw)?.label ?? raw;
+            return `${dimension?.label.toLowerCase() ?? name} ${label}`;
+          })
+          .join(', ')
+      : null;
+
+  return (
+    <>
+      <strong className="font-semibold">{metric.label}</strong> for <strong className="font-semibold">{programme}</strong>,{' '}
+      {period}
+      {sliceText ? (
+        <>
+          , limited to <strong className="font-semibold">{sliceText}</strong>
+        </>
+      ) : scope === 'slice' ? (
+        <span className="text-on-surface-muted"> — now pick which slice</span>
+      ) : (
+        <> — the whole programme</>
+      )}
+      {value !== '' ? (
+        <>
+          {' '}
+          = <strong className="font-semibold">{formatValue(Number(value), metric.unit)}</strong>
+        </>
+      ) : (
+        '.'
+      )}
+    </>
+  );
+}
+
+function ScopeOption({
+  checked,
+  onChange,
+  title,
+  hint,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer gap-3 rounded-md border p-3 transition ${
+        checked ? 'border-primary bg-primary-container' : 'border-outline-variant hover:border-outline'
+      }`}
+    >
+      <input type="radio" checked={checked} onChange={onChange} className="mt-1 accent-primary" />
+      <span className="min-w-0">
+        <span className="block text-body-text font-medium text-on-surface">{title}</span>
+        <span className="mt-0.5 block text-secondary-text text-on-surface-variant">{hint}</span>
+      </span>
+    </label>
+  );
+}
+
+function Saved({
+  message,
+  summary,
+  onAnother,
+  onClose,
+}: {
+  message: string;
+  summary: React.ReactNode;
+  onAnother: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-5 px-6 py-8">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-status-success-container">
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-status-success" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        </span>
+        <div className="min-w-0">
+          <p className="text-body-text font-medium text-on-surface">{message}</p>
+          <p className="mt-1.5 text-secondary-text leading-relaxed text-on-surface-variant">{summary}</p>
+        </div>
+      </div>
+
+      <div className="-mx-6 -mb-8 flex items-center justify-end gap-3 border-t border-outline-variant px-6 py-4">
+        <Button variant="secondary" onClick={onAnother}>
+          Record another
+        </Button>
+        <Button variant="primary" onClick={onClose}>
+          Done
+        </Button>
       </div>
     </div>
   );
 }
 
 /**
- * One breakdown field.
- *
- * A closed axis (gender, platform, channel) is a strict dropdown — its values
- * are fixed and a typo should be impossible. An open axis (cohort, hub, region,
- * sector) is a combobox: pick an existing value or type a new one. Cohorts keep
- * being added, so the form must not cap them at whatever was seeded — the API
- * registers anything new against the catalog on save.
+ * A closed axis is a strict dropdown — its values are fixed and a typo should be impossible.
+ * An open axis is a combobox: pick an existing value or type a new one, because cohorts keep
+ * being added and the form must not cap them at whatever was seeded.
  */
 function DimensionInput({
   dimension,
@@ -281,36 +531,48 @@ function DimensionInput({
 }) {
   const listId = `dim-${dimension.name}`;
   const sorted = [...dimension.values].sort((a, b) => a.order - b.order);
-  const isNew = value !== '' && !sorted.some((v) => v.value === value || v.label.toLowerCase() === value.toLowerCase());
+  const isNew =
+    value !== '' && !sorted.some((v) => v.value === value || v.label.toLowerCase() === value.toLowerCase());
 
   if (dimension.isClosed) {
     return (
-      <label className="block">
-        <span className="text-[0.68rem] font-medium text-ink-secondary">{dimension.label}</span>
-        <select value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
-          <option value="">All</option>
+      <Field label={dimension.label} htmlFor={`dim-input-${dimension.name}`}>
+        <select
+          id={`dim-input-${dimension.name}`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={selectClass}
+        >
+          <option value="">Any</option>
           {sorted.map((v) => (
             <option key={v.value} value={v.value}>
               {v.label}
             </option>
           ))}
         </select>
-      </label>
+      </Field>
     );
   }
 
   return (
-    <label className="block">
-      <span className="text-[0.68rem] font-medium text-ink-secondary">
-        {dimension.label}
-        <span className="ml-1 font-normal text-ink-muted">· or type a new one</span>
-      </span>
+    <Field
+      label={dimension.label}
+      htmlFor={`dim-input-${dimension.name}`}
+      hint={
+        isNew ? (
+          <span className="text-on-primary-container">
+            “{value}” is new — it will be added to {dimension.label.toLowerCase()}.
+          </span>
+        ) : undefined
+      }
+    >
       <input
+        id={`dim-input-${dimension.name}`}
         type="text"
         list={listId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="All"
+        placeholder="Any"
         className={inputClass}
       />
       <datalist id={listId}>
@@ -320,31 +582,6 @@ function DimensionInput({
           </option>
         ))}
       </datalist>
-      {isNew ? (
-        <span className="mt-1 block text-[0.62rem] text-brand-dark">
-          “{value}” is new — it will be added to {dimension.label.toLowerCase()}.
-        </span>
-      ) : null}
-    </label>
-  );
-}
-
-const inputClass =
-  'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30';
-const selectClass = `${inputClass} bg-white`;
-
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label htmlFor={htmlFor} className="block text-xs font-semibold text-ink-secondary">
-        {label}
-      </label>
-      {children}
-    </div>
+    </Field>
   );
 }

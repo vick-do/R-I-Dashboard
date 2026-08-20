@@ -16,13 +16,6 @@ export type TrendPoint = { period: string } & Record<string, string | number>;
 
 /**
  * Change over time, one line per series.
- *
- * Categorical colour is correct here because the series *are* the subject —
- * the reader's job is to tell MEST Africa apart from Citi FM. Slots are taken
- * in fixed order from the validated palette and never cycled.
- *
- * Single y-axis only. Two measures of different scale get two charts, never a
- * second axis.
  */
 export function TrendLine({
   data,

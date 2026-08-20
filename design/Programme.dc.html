@@ -1,0 +1,444 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+  <style>
+    body { margin: 0; background: #f2eee5; }
+    * { box-sizing: border-box; }
+    a { color: #0a6271; text-decoration: none; }
+    a:hover { color: #0e8fa2; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; min-height: 1980px; background: #f7f4ee; font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; color: #12100c; padding: 0 0 52px 0;">
+
+  <!-- ── breadcrumb + masthead ── -->
+  <div style="padding: 30px 56px 0 56px;">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #8a8375; margin-bottom: 16px;">
+      <span>MEST X</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+      <span>Ecosystem</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+      <span style="color: #12100c;">EdTech Mondays</span>
+    </div>
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; padding-bottom: 26px; border-bottom: 2px solid #12100c;">
+      <div style="max-width: 720px;">
+        <div style="font-family: Newsreader, Georgia, serif; font-size: 52px; line-height: 1.02; letter-spacing: -0.015em;">EdTech Mondays</div>
+        <div style="font-size: 14px; color: #4a463d; margin-top: 12px; line-height: 1.6;">
+          A weekly conversation on education technology, broadcast and published across five partner channels.
+          Every figure below is imported from the monthly analytics sheets and reconciles exactly against the
+          untouched 2026 consolidated sheet.
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding-bottom: 4px;">
+        <div style="display: flex; border: 1px solid #ddd7ca; border-radius: 7px; overflow: hidden; background: #fff;">
+          <div style="padding: 7px 14px; font-size: 12px; color: #4a463d;">All time</div>
+          <div style="padding: 7px 14px; font-size: 12px; font-weight: 600; background: #12100c; color: #f7f4ee; border-left: 1px solid #ddd7ca;">2026</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px; background: #0e8fa2; color: #fff; border-radius: 7px; padding: 8px 15px; font-size: 12.5px; font-weight: 500;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Record a figure
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── metric strip ── -->
+  <div style="padding: 26px 56px 0 56px;">
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: #ddd7ca; border: 1px solid #ddd7ca; border-radius: 10px; overflow: hidden;">
+
+      <div style="background: #12100c; padding: 15px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #8a8375;">IMPRESSIONS</div>
+        <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: #f7f4ee;">2.80M</div>
+        <div style="font-size: 10.5px; color: #7fd3de;">Selected</div>
+      </div>
+
+      <div style="background: #fff; padding: 15px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #8a8375;">REACH</div>
+        <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em;">1.98M</div>
+        <div style="font-size: 10.5px; color: #8a8375;">70.7% of impressions</div>
+      </div>
+
+      <div style="background: #fff; padding: 15px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #8a8375;">VIDEO VIEWS</div>
+        <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em;">230,786</div>
+        <div style="font-size: 10.5px; color: #8a8375;">Recorded</div>
+      </div>
+
+      <div style="background: #fff; padding: 15px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #8a8375;">ENGAGEMENT</div>
+        <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em;">7,920</div>
+        <div style="font-size: 10.5px; color: #8a8375;">Recorded</div>
+      </div>
+
+      <div style="background: #fff; padding: 15px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #8a8375;">POSTS</div>
+        <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em;">38</div>
+        <div style="font-size: 10.5px; color: #8a8375;">Across 10 months</div>
+      </div>
+
+      <div style="background: #fff; padding: 15px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #8a8375;">ENGAGEMENT RATE</div>
+        <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em;">0.28%</div>
+        <div style="font-size: 10.5px; color: #0a6271;">Summed across channel</div>
+      </div>
+    </div>
+    <div style="font-size: 11.5px; color: #8a8375; margin-top: 9px;">Six more metrics recorded — reactions, comments, shares, clicks, click-through rate, targeted impressions. Select any figure to lead the page.</div>
+  </div>
+
+  <!-- ── section: change over time ── -->
+  <div style="padding: 34px 56px 0 56px;">
+    <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px;">
+      <div style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; color: #8a8375;">01 — CHANGE</div>
+      <div style="height: 1px; flex-grow: 1; background: #ddd7ca;"></div>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 12px; padding: 28px 32px 26px 32px;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;">
+        <div style="max-width: 700px;">
+          <div style="font-family: Newsreader, Georgia, serif; font-size: 27px; line-height: 1.26;">Impressions grew 77% between February and November — and never fell for two months running.</div>
+          <div style="font-size: 12.5px; color: #4a463d; margin-top: 8px;">Impressions per month · 2026 · 2,800,672 total</div>
+        </div>
+        <div style="display: flex; gap: 7px; flex-shrink: 0;">
+          <div style="border: 1px solid #ddd7ca; border-radius: 7px; padding: 5px 11px; font-size: 11.5px; color: #4a463d;">Show table</div>
+          <div style="border: 1px solid #ddd7ca; border-radius: 7px; padding: 5px 11px; font-size: 11.5px; color: #4a463d;">Export</div>
+        </div>
+      </div>
+
+      <svg width="1264" height="250" viewBox="0 0 1264 250" fill="none" style="margin-top: 22px; display: block;">
+        <defs>
+          <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0e8fa2" stop-opacity="0.16"/>
+            <stop offset="100%" stop-color="#0e8fa2" stop-opacity="0.01"/>
+          </linearGradient>
+        </defs>
+
+        <line x1="60" y1="200" x2="1244" y2="200" stroke="#ddd7ca" stroke-width="1"/>
+        <line x1="60" y1="152.6" x2="1244" y2="152.6" stroke="#eee9df" stroke-width="1"/>
+        <line x1="60" y1="105.3" x2="1244" y2="105.3" stroke="#eee9df" stroke-width="1"/>
+        <line x1="60" y1="57.9" x2="1244" y2="57.9" stroke="#eee9df" stroke-width="1"/>
+
+        <text x="48" y="204" text-anchor="end" font-family="Archivo" font-size="11" fill="#8a8375">0</text>
+        <text x="48" y="156.6" text-anchor="end" font-family="Archivo" font-size="11" fill="#8a8375">100k</text>
+        <text x="48" y="109.3" text-anchor="end" font-family="Archivo" font-size="11" fill="#8a8375">200k</text>
+        <text x="48" y="61.9" text-anchor="end" font-family="Archivo" font-size="11" fill="#8a8375">300k</text>
+
+        <path d="M60 106 L191.6 98.2 L323.1 85.7 L454.7 72.7 L586.2 80.6 L717.8 62.8 L849.3 55.3 L980.9 42.8 L1112.4 35.1 L1244 34.1 L1244 200 L60 200 Z" fill="url(#fillArea)"/>
+        <path d="M60 106 L191.6 98.2 L323.1 85.7 L454.7 72.7 L586.2 80.6 L717.8 62.8 L849.3 55.3 L980.9 42.8 L1112.4 35.1 L1244 34.1" stroke="#0e8fa2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <circle cx="60" cy="106" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="191.6" cy="98.2" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="323.1" cy="85.7" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="454.7" cy="72.7" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="586.2" cy="80.6" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="717.8" cy="62.8" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="849.3" cy="55.3" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="980.9" cy="42.8" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="1112.4" cy="35.1" r="4" fill="#0e8fa2" stroke="#fff" stroke-width="2"/>
+        <circle cx="1244" cy="34.1" r="5" fill="#0e8fa2" stroke="#fff" stroke-width="2.5"/>
+
+        <text x="60" y="92" text-anchor="start" font-family="Archivo" font-size="11.5" font-weight="600" fill="#4a463d">198,400</text>
+        <text x="1244" y="22" text-anchor="end" font-family="Archivo" font-size="11.5" font-weight="600" fill="#12100c">350,272</text>
+
+        <text x="60" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Feb</text>
+        <text x="191.6" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Mar</text>
+        <text x="323.1" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Apr</text>
+        <text x="454.7" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">May</text>
+        <text x="586.2" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Jun</text>
+        <text x="717.8" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Jul</text>
+        <text x="849.3" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Aug</text>
+        <text x="980.9" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Sep</text>
+        <text x="1112.4" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Oct</text>
+        <text x="1244" y="222" text-anchor="middle" font-family="Archivo" font-size="11" fill="#4a463d">Nov</text>
+      </svg>
+
+      <div style="margin-top: 8px; padding-top: 16px; border-top: 1px solid #eee9df; display: flex; align-items: center; gap: 9px; font-size: 12px; color: #4a463d;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e8fa2" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        The June dip coincides with two posts instead of the usual four. Impressions per post rose in that month.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── section: composition ── -->
+  <div style="padding: 30px 56px 0 56px;">
+    <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px;">
+      <div style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; color: #8a8375;">02 — COMPOSITION</div>
+      <div style="height: 1px; flex-grow: 1; background: #ddd7ca;"></div>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 12px; padding: 28px 32px 26px 32px;">
+      <div style="font-family: Newsreader, Georgia, serif; font-size: 25px; line-height: 1.28; max-width: 780px;">MEST's own channels carry two fifths of the reach; the broadcast partners carry the rest.</div>
+      <div style="font-size: 12.5px; color: #4a463d; margin-top: 8px;">Share of impressions by channel · 2026</div>
+
+      <div style="display: flex; gap: 2px; margin-top: 24px; height: 46px;">
+        <div style="width: 507px; background: #0e8fa2; border-radius: 5px 0 0 5px; display: flex; align-items: center; padding-left: 15px; color: #fff; font-size: 13px; font-weight: 600;">41%</div>
+        <div style="width: 297px; background: #eb6834; display: flex; align-items: center; padding-left: 15px; color: #fff; font-size: 13px; font-weight: 600;">24%</div>
+        <div style="width: 222px; background: #4a3aa7; display: flex; align-items: center; padding-left: 15px; color: #fff; font-size: 13px; font-weight: 600;">18%</div>
+        <div style="width: 136px; background: #eda100; display: flex; align-items: center; padding-left: 13px; color: #3d2a00; font-size: 13px; font-weight: 600;">11%</div>
+        <div style="width: 74px; background: #e87ba4; border-radius: 0 5px 5px 0; display: flex; align-items: center; padding-left: 11px; color: #4a1226; font-size: 13px; font-weight: 600;">6%</div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 22px; margin-top: 18px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4a463d;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #0e8fa2;"></span>MEST Africa <span style="color: #12100c; font-weight: 600;">1,148,276</span></div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4a463d;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #eb6834;"></span>Citi FM <span style="color: #12100c; font-weight: 600;">672,161</span></div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4a463d;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #4a3aa7;"></span>Channel One TV <span style="color: #12100c; font-weight: 600;">504,121</span></div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4a463d;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #eda100;"></span>Panelists <span style="color: #12100c; font-weight: 600;">308,074</span></div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4a463d;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #e87ba4;"></span>Plugin Digital <span style="color: #12100c; font-weight: 600;">168,040</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── section: every metric at once ── -->
+  <div style="padding: 30px 56px 0 56px;">
+    <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px;">
+      <div style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; color: #8a8375;">03 — EVERY METRIC AT ONCE</div>
+      <div style="height: 1px; flex-grow: 1; background: #ddd7ca;"></div>
+      <div style="font-size: 11.5px; color: #8a8375;">Shared time axis · Feb–Nov 2026</div>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 12px; padding: 26px 30px 24px 30px;">
+      <div style="font-family: Newsreader, Georgia, serif; font-size: 22px; line-height: 1.3; max-width: 760px;">Twelve measures, one grid — instead of twelve identical charts stacked down the page.</div>
+
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; margin-top: 24px;">
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Impressions</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 34 L21.8 31 L41.6 26 L61.3 21 L81.1 24 L100.9 17 L120.7 14 L140.4 9 L160.2 6 L178 5" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">2.80M</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Reach</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 36 L21.8 33 L41.6 29 L61.3 24 L81.1 27 L100.9 19 L120.7 16 L140.4 12 L160.2 9 L178 8" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">1.98M</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Video views</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 40 L21.8 38 L41.6 30 L61.3 33 L81.1 22 L100.9 25 L120.7 15 L140.4 18 L160.2 11 L178 7" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">230,786</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Engagement</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 28 L21.8 32 L41.6 25 L61.3 27 L81.1 20 L100.9 23 L120.7 18 L140.4 14 L160.2 17 L178 12" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">7,920</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Posts</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 22 L21.8 22 L41.6 14 L61.3 22 L81.1 38 L100.9 22 L120.7 14 L140.4 22 L160.2 14 L178 22" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">38</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Reactions</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 33 L21.8 29 L41.6 31 L61.3 24 L81.1 26 L100.9 19 L120.7 21 L140.4 15 L160.2 13 L178 10" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">5,138</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Comments</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 30 L21.8 34 L41.6 28 L61.3 31 L81.1 25 L100.9 28 L120.7 22 L140.4 25 L160.2 19 L178 21" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">1,204</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Shares</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 36 L21.8 31 L41.6 33 L61.3 27 L81.1 29 L100.9 22 L120.7 24 L140.4 18 L160.2 20 L178 14" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">918</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Clicks</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 26 L21.8 30 L41.6 24 L61.3 28 L81.1 21 L100.9 26 L120.7 20 L140.4 23 L160.2 16 L178 18" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">660</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Engagement rate</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 18 L21.8 22 L41.6 20 L61.3 26 L81.1 23 L100.9 28 L120.7 26 L140.4 31 L160.2 29 L178 33" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">0.28%</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="font-size: 11px; font-weight: 600; color: #4a463d;">Click-through rate</div>
+          <svg width="100%" height="52" viewBox="0 0 180 52" preserveAspectRatio="none"><path d="M2 24 L21.8 21 L41.6 27 L61.3 24 L81.1 30 L100.9 27 L120.7 32 L140.4 29 L160.2 34 L178 31" stroke="#0e8fa2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="font-size: 14px; font-weight: 600;">0.02%</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px; opacity: 0.55;">
+          <div style="font-size: 11px; font-weight: 600; color: #8a8375;">Targeted impressions</div>
+          <div style="height: 52px; border: 1px dashed #cfc8b8; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10.5px; color: #8a8375;">No data</div>
+          <div style="font-size: 14px; color: #b3ac9c;">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── heatmap + provenance ── -->
+  <div style="padding: 30px 56px 0 56px; display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px;">
+
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 12px; padding: 26px 30px 24px 30px;">
+      <div style="font-family: Newsreader, Georgia, serif; font-size: 21px; line-height: 1.3;">Citi FM's contribution is concentrated in the second half of the year.</div>
+      <div style="font-size: 12.5px; color: #4a463d; margin-top: 7px;">Impressions by channel and month · darker is larger</div>
+
+      <div style="margin-top: 22px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="display: flex; gap: 4px; padding-left: 118px;">
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Feb</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Mar</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Apr</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">May</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Jun</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Jul</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Aug</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Sep</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Oct</div>
+          <div style="width: 52px; text-align: center; font-size: 10px; color: #8a8375;">Nov</div>
+        </div>
+
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <div style="width: 114px; font-size: 11.5px; text-align: right; padding-right: 4px;">MEST Africa</div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #33a3b6;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #33a3b6;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0a6271;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0a6271;"></div>
+        </div>
+
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <div style="width: 114px; font-size: 11.5px; text-align: right; padding-right: 4px;">Citi FM</div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #33a3b6;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+        </div>
+
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <div style="width: 114px; font-size: 11.5px; text-align: right; padding-right: 4px;">Channel One TV</div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #33a3b6;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #33a3b6;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #0e8fa2;"></div>
+        </div>
+
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <div style="width: 114px; font-size: 11.5px; text-align: right; padding-right: 4px;">Panelists</div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #eef7f9;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+        </div>
+
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <div style="width: 114px; font-size: 11.5px; text-align: right; padding-right: 4px;">Plugin Digital</div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #eef7f9;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #eef7f9;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #eef7f9;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #d3ebf0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #a3d7e0;"></div>
+          <div style="width: 52px; height: 30px; border-radius: 3px; background: #6dc0cd;"></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px; display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 10.5px; color: #8a8375;">Lower</div>
+        <div style="display: flex; gap: 2px;">
+          <div style="width: 26px; height: 9px; background: #d3ebf0; border-radius: 2px;"></div>
+          <div style="width: 26px; height: 9px; background: #a3d7e0; border-radius: 2px;"></div>
+          <div style="width: 26px; height: 9px; background: #6dc0cd; border-radius: 2px;"></div>
+          <div style="width: 26px; height: 9px; background: #33a3b6; border-radius: 2px;"></div>
+          <div style="width: 26px; height: 9px; background: #0e8fa2; border-radius: 2px;"></div>
+          <div style="width: 26px; height: 9px; background: #0e8fa2; border-radius: 2px;"></div>
+          <div style="width: 26px; height: 9px; background: #0a6271; border-radius: 2px;"></div>
+        </div>
+        <div style="font-size: 10.5px; color: #8a8375;">Higher</div>
+        <div style="margin-left: auto; border: 1px solid #ddd7ca; border-radius: 7px; padding: 5px 11px; font-size: 11.5px; color: #4a463d;">Show table</div>
+      </div>
+    </div>
+
+    <div style="background: #12100c; border-radius: 12px; padding: 26px 28px; color: #f2eee5; display: flex; flex-direction: column;">
+      <div style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; color: #8a8375;">04 — PROVENANCE</div>
+      <div style="font-family: Newsreader, Georgia, serif; font-size: 22px; line-height: 1.3; margin-top: 14px;">Every one of these figures reconciles against the untouched consolidated sheet.</div>
+
+      <div style="margin-top: 22px; display: flex; flex-direction: column; gap: 11px;">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0ca30c" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span style="color: #c9c3b6;">Posts</span><span style="margin-left: auto; font-weight: 600;">38 = 38</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0ca30c" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span style="color: #c9c3b6;">Impressions</span><span style="margin-left: auto; font-weight: 600;">2,800,672</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0ca30c" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span style="color: #c9c3b6;">Reach</span><span style="margin-left: auto; font-weight: 600;">1,978,763</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0ca30c" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span style="color: #c9c3b6;">Engagement</span><span style="margin-left: auto; font-weight: 600;">7,920</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0ca30c" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span style="color: #c9c3b6;">Video views</span><span style="margin-left: auto; font-weight: 600;">230,786</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid #2e2a22; font-size: 12px; line-height: 1.6; color: #b3ac9c;">
+        Figures are imported <em style="color: #f2eee5; font-style: normal;">only</em> from the twenty monthly blocks.
+        The consolidated sheet is never imported — it is held back as the check. All nine metrics match exactly.
+      </div>
+
+      <div style="margin-top: auto; padding-top: 20px; display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; color: #7fd3de;">
+        Open the import batch
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

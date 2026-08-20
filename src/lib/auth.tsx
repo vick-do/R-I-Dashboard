@@ -7,6 +7,8 @@ type AuthState = {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   can: (role: 'admin' | 'editor') => boolean;
+  /** Re-reads the signed-in user, after tokens are set outside signIn. */
+  refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -61,6 +63,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         tokens.clear();
         setUser(null);
+      },
+      async refresh() {
+        try {
+          const { user: me } = await api.me();
+          setUser(me);
+        } catch {
+          tokens.clear();
+          setUser(null);
+        }
       },
       can(role) {
         if (!user) return false;

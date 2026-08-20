@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { usePrograms } from '../../hooks/useData';
+import { useState, type ReactNode } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { usePrograms, useScorecard, flattenPrograms } from '../../hooks/useData';
 import { useAuth } from '../../lib/auth';
+import { PeriodProvider, usePeriod } from '../../lib/period';
 import { Sidebar } from './Sidebar';
+import { PeriodSelector } from '../ui/PeriodSelector';
+import { BellIcon, ChevronRightIcon, CloseIcon, ExportIcon, MenuIcon, SignOutIcon } from '../ui/Icons';
 
 /**
- * The application shell.
- *
- * Previously this lived inside OverviewPage, which made the overview and the
- * chrome the same component. They are separated here so every route shares one
- * layout and the overview is just another page.
+ * The application shell: a fixed sidebar, a top bar carrying the breadcrumb and the global
+ * period filter, and a scrolling content column.
  */
 export function DashboardLayout() {
   const { data: programs = [], isLoading } = usePrograms();
@@ -17,94 +17,219 @@ export function DashboardLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-surface-sunken text-ink">
-      <header className="no-print sticky top-0 z-30 border-b border-slate-200 bg-surface">
-        <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-3 sm:px-6">
-          {/* The previous sidebar was `hidden md:flex` with no fallback, leaving
-              phones with no navigation at all. This is that fallback. */}
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open navigation"
-            className="rounded-lg p-2 text-ink-secondary transition hover:bg-slate-100 lg:hidden"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-              M
-            </span>
-            <div className="leading-tight">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-ink-muted">MEST Africa</p>
-              <p className="text-sm font-semibold text-ink">Research &amp; Impact</p>
-            </div>
+    <PeriodProvider>
+      <div className="min-h-screen bg-surface text-on-surface">
+        <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-outline-variant bg-surface-container-lowest lg:flex">
+          <Brand />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {isLoading ? <NavSkeleton /> : <Sidebar programs={programs} />}
           </div>
-
-          <div className="ml-auto flex items-center gap-3">
-            {user ? (
-              <>
-                <div className="hidden text-right sm:block">
-                  <p className="text-xs font-semibold text-ink">{user.fullName}</p>
-                  <p className="text-[0.68rem] capitalize text-ink-muted">{user.role}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void signOut()}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-ink-secondary transition hover:bg-slate-50"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto flex max-w-[1600px] gap-6 px-4 py-6 sm:px-6">
-        <aside className="no-print hidden w-64 shrink-0 self-start rounded-xl border border-slate-200 bg-surface shadow-card lg:block">
-          <div className="max-h-[calc(100vh-7rem)] overflow-y-auto">
-            {isLoading ? (
-              <p className="p-4 text-sm text-ink-muted">Loading programmes…</p>
-            ) : (
-              <Sidebar programs={programs} />
-            )}
-          </div>
+          {user ? <UserRow name={user.fullName} role={user.role} onSignOut={() => void signOut()} /> : null}
         </aside>
 
-        <main className="min-w-0 flex-1">
-          <Outlet />
-        </main>
-      </div>
-
-      {drawerOpen ? (
-        <div className="no-print fixed inset-0 z-40 lg:hidden">
-          <button
-            type="button"
-            aria-label="Close navigation"
-            onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 bg-slate-900/40"
-          />
-          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] overflow-y-auto bg-surface shadow-soft">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-              <p className="text-sm font-semibold text-ink">Programmes</p>
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close navigation"
-                className="rounded-lg p-1.5 text-ink-muted transition hover:bg-slate-100"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
+        {drawerOpen ? (
+          <div className="no-print fixed inset-0 z-40 lg:hidden">
+            <button
+              type="button"
+              aria-label="Close navigation"
+              onClick={() => setDrawerOpen(false)}
+              className="absolute inset-0 bg-on-surface/40"
+            />
+            <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface-container-lowest shadow-floating">
+              <Brand onClose={() => setDrawerOpen(false)} />
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <Sidebar programs={programs} onNavigate={() => setDrawerOpen(false)} />
+              </div>
+              {user ? <UserRow name={user.fullName} role={user.role} onSignOut={() => void signOut()} /> : null}
             </div>
-            <Sidebar programs={programs} onNavigate={() => setDrawerOpen(false)} />
           </div>
+        ) : null}
+
+        <div className="lg:pl-64">
+          <TopBar programs={programs} onOpenDrawer={() => setDrawerOpen(true)} />
+          <main className="mx-auto max-w-[1440px] p-page-padding">
+            <Outlet />
+          </main>
         </div>
+      </div>
+    </PeriodProvider>
+  );
+}
+
+function Brand({ onClose }: { onClose?: () => void }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-5">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-on-primary">
+        M
+      </span>
+      <div className="min-w-0 leading-tight">
+        <p className="truncate text-[17px] font-bold text-on-surface">MEST Impact</p>
+        <p className="truncate text-xs text-on-surface-muted">Research &amp; Impact</p>
+      </div>
+      {onClose ? (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close navigation"
+          className="ml-auto rounded-md p-1.5 text-on-surface-muted transition hover:bg-surface-variant"
+        >
+          <CloseIcon />
+        </button>
       ) : null}
+    </div>
+  );
+}
+
+function UserRow({ name, role, onSignOut }: { name: string; role: string; onSignOut: () => void }) {
+  const initials = name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+
+  return (
+    <div className="flex items-center gap-3 border-t border-outline-variant px-4 py-4">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-on-primary">
+        {initials}
+      </span>
+      <div className="min-w-0 leading-tight">
+        <p className="truncate text-body-text font-medium text-on-surface">{name}</p>
+        <p className="truncate text-xs capitalize text-on-surface-muted">{role}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onSignOut}
+        aria-label="Sign out"
+        title="Sign out"
+        className="ml-auto shrink-0 rounded-md p-1.5 text-on-surface-muted transition hover:bg-surface-variant hover:text-on-surface"
+      >
+        <SignOutIcon />
+      </button>
+    </div>
+  );
+}
+
+function TopBar({
+  programs,
+  onOpenDrawer,
+}: {
+  programs: NonNullable<ReturnType<typeof usePrograms>['data']>;
+  onOpenDrawer: () => void;
+}) {
+  const location = useLocation();
+  const { year, setYear } = usePeriod();
+  const trail = useBreadcrumb(programs ?? [], location.pathname);
+
+  // Years the organisation actually holds data for. Shares a cache key with the
+  // Overview's own all-time scorecard call, so this costs one request, not two.
+  const { data } = useScorecard(undefined);
+  const years = data?.years ?? [];
+
+  return (
+    <header className="no-print sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-outline-variant bg-surface-container-lowest px-page-padding">
+      <button
+        type="button"
+        onClick={onOpenDrawer}
+        aria-label="Open navigation"
+        className="-ml-2 rounded-md p-2 text-on-surface-variant transition hover:bg-surface-variant lg:hidden"
+      >
+        <MenuIcon />
+      </button>
+
+      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-secondary-text text-on-surface-muted">
+        {trail.map((crumb, index) => (
+          <span key={`${crumb}-${index}`} className="flex min-w-0 items-center gap-2">
+            {index > 0 ? <ChevronRightIcon className="h-3.5 w-3.5 shrink-0" /> : null}
+            <span className={index === trail.length - 1 ? 'truncate font-medium text-on-surface' : 'hidden truncate sm:inline'}>
+              {crumb}
+            </span>
+          </span>
+        ))}
+      </nav>
+
+      <div className="ml-auto flex items-center gap-3">
+        <PeriodSelector years={years} value={year} onChange={setYear} />
+        <button
+          type="button"
+          disabled
+          title="Exports arrive with the next phase"
+          className="hidden items-center gap-2 rounded-md border border-outline-variant px-3 py-1.5 text-secondary-text font-medium text-on-surface-muted sm:flex"
+        >
+          <ExportIcon />
+          Export
+        </button>
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="rounded-full p-1.5 text-on-surface-variant transition hover:bg-surface-variant"
+        >
+          <BellIcon />
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function useBreadcrumb(
+  programs: NonNullable<ReturnType<typeof usePrograms>['data']>,
+  pathname: string
+): string[] {
+  const staticTrails: Record<string, string[]> = {
+    '/': ['Dashboard', 'Overview'],
+    '/compare': ['Dashboard', 'Compare programmes'],
+    '/approvals': ['Operations', 'Approvals'],
+    '/imports': ['Operations', 'Connected sheets'],
+    '/quality': ['Operations', 'Data quality'],
+    '/admin': ['Operations', 'Administration'],
+  };
+  if (staticTrails[pathname]) return staticTrails[pathname];
+  if (!pathname.startsWith('/p/')) return ['Dashboard'];
+
+  const pageKey = pathname.slice(3);
+  const flat = flattenPrograms(programs);
+  const node = flat.find((p) => p.pageKey === pageKey);
+  if (!node) return ['Programmes'];
+
+  const trail: string[] = [node.name];
+  let current = node;
+  while (current.parent) {
+    const parent = flat.find((p) => p.id === current.parent);
+    if (!parent) break;
+    trail.unshift(parent.name);
+    current = parent;
+  }
+  return trail;
+}
+
+function NavSkeleton() {
+  return (
+    <div className="space-y-2 p-3" aria-hidden="true">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="h-8 animate-pulse rounded bg-surface-variant" />
+      ))}
+    </div>
+  );
+}
+
+/** Page header: title, subtitle, and the page's own primary action. */
+export function PageHeader({
+  title,
+  subtitle,
+  actions,
+}: {
+  title: string;
+  subtitle?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="text-page-title text-on-surface">{title}</h1>
+        {subtitle ? <p className="mt-1.5 text-secondary-text text-on-surface-variant">{subtitle}</p> : null}
+      </div>
+      {actions ? <div className="no-print flex flex-wrap items-center gap-3">{actions}</div> : null}
     </div>
   );
 }

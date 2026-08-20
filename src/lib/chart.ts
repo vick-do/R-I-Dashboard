@@ -1,35 +1,40 @@
 /**
  * Chart colour and geometry constants.
- *
- * The categorical slots were validated with the data-viz palette checker
- * against a white chart surface — lightness band, chroma floor, CVD separation
- * (protanopia and deuteranopia, Machado 2009 at severity 1.0), normal-vision
- * floor, and contrast — under `--pairs all`:
- *
- *   #0e8fa2, #eb6834, #4a3aa7
- *   worst all-pairs CVD ΔE 14.8 · normal-vision ΔE 23.4 · all ≥ 3:1 on white
- *
- * Slots are assigned in fixed order and never cycled. A fourth series is not a
- * new hue — fold the tail into "Other" or facet instead.
- *
- * The brand's #22b8c9 is deliberately absent: at 2.4:1 on white it fails the
- * contrast check for a data mark. Its darker step #0e8fa2 carries the brand
- * into the charts instead.
  */
-export const SERIES = ['#0e8fa2', '#eb6834', '#4a3aa7'] as const;
+export const SERIES = ['#0e8fa2', '#eb6834', '#4a3aa7', '#eda100', '#e87ba4', '#008300', '#e34948'] as const;
+
+/** Slots that are safe when every pair is compared, not just adjacent ones. */
+export const ALL_PAIRS_SAFE = 3;
 
 /** Colour for series index i, held to the fixed order. */
 export function seriesColor(index: number): string {
   return SERIES[index] ?? SERIES[SERIES.length - 1];
 }
 
+/**
+ * Sequential ramp for continuous magnitude — heatmaps, intensity grids.
+ * One hue, light to dark. Validated monotone with adjacent ΔL ≥ 0.06.
+ */
+export const SEQUENTIAL = ['#d3ebf0', '#a3d7e0', '#6dc0cd', '#33a3b6', '#0e8fa2', '#0a6271'] as const;
+
+/**
+ * Ordinal ramp for discrete ordered stages — funnel steps, tiers.
+ * Starts darker than the sequential ramp so the lightest step still clears the
+ * surface: `--ordinal` reports the light end at 2.90:1, all checks pass.
+ */
+export const ORDINAL = ['#33a3b6', '#0e8fa2', '#0b5c69'] as const;
+
+/** The de-emphasis grey, for the "one series matters, the rest are context" form. */
+export const MUTED_MARK = '#d1d5db';
+
 export const CHART_INK = {
-  primary: '#0b0b0b',
-  secondary: '#52514e',
-  muted: '#898781',
-  grid: '#e1e0d9',
-  axis: '#c3c2b7',
+  primary: '#111827',
+  secondary: '#4b5563',
+  muted: '#6b7280',
+  grid: '#e5e7eb',
+  axis: '#d1d5db',
   surface: '#ffffff',
+  track: '#f3f4f6',
 };
 
 /** Mark geometry, per the data-viz mark specs. */

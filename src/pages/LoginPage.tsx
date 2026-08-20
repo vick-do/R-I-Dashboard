@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { errorMessage } from '../lib/api';
+import { Field, inputClass } from '../components/ui/Field';
+import { Button } from '../components/ui/Button';
 
 export function LoginPage() {
   const { user, loading, signIn } = useAuth();
@@ -27,66 +29,67 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-sunken px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-surface p-6 shadow-soft">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+    <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-10">
+      <div className="w-full max-w-[400px]">
+        <div className="mb-7 flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-base font-bold text-on-primary">
             M
           </span>
           <div className="leading-tight">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-ink-muted">MEST Africa</p>
-            <p className="text-sm font-semibold text-ink">Research &amp; Impact</p>
+            <p className="text-[17px] font-bold text-on-surface">MEST Impact</p>
+            <p className="text-secondary-text text-on-surface-muted">Research &amp; Impact</p>
           </div>
         </div>
 
-        <h1 className="text-lg font-bold text-ink">Sign in</h1>
-        <p className="mt-1 text-xs text-ink-secondary">Impact reporting across all programmes.</p>
+        <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-7">
+          <h1 className="text-section-header text-on-surface">Sign in</h1>
+          <p className="mt-1.5 text-secondary-text text-on-surface-variant">
+            Impact reporting across every MEST programme.
+          </p>
 
-        <form onSubmit={onSubmit} className="mt-5 space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-xs font-semibold text-ink-secondary">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="username"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
-            />
-          </div>
+          <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
+            <Field label="Email" htmlFor="email">
+              <input
+                id="email"
+                type="email"
+                autoComplete="username"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
 
-          <div>
-            <label htmlFor="password" className="block text-xs font-semibold text-ink-secondary">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
-            />
-          </div>
+            <Field label="Password" htmlFor="password">
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
 
-          {error ? (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-              {error}
-            </p>
-          ) : null}
+            {error ? (
+              <p
+                role="alert"
+                className="rounded-md border border-status-danger/30 bg-status-danger-container px-3 py-2 text-secondary-text text-status-on-danger-container"
+              >
+                {error}
+              </p>
+            ) : null}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
-          >
-            {submitting ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
+            <Button type="submit" variant="primary" disabled={submitting} className="mt-1 w-full">
+              {submitting ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </form>
+        </div>
+
+        <p className="mt-5 text-center text-secondary-text text-on-surface-muted">
+          Every figure in this system is calculated from recorded data.
+        </p>
       </div>
     </div>
   );

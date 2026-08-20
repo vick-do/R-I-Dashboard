@@ -5,10 +5,6 @@ type Entry = { name?: string; value?: number; color?: string; dataKey?: string |
 
 /**
  * Shared hover tooltip.
- *
- * Values wear text tokens; the series colour appears only as a small swatch
- * beside the label, so identity is carried by the mark rather than by tinted
- * text.
  */
 export function ChartTooltip({
   active,
@@ -26,11 +22,11 @@ export function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-soft">
+    <div className="rounded-lg border border-outline-variant bg-white px-3 py-2 shadow-floating">
       {label !== undefined ? (
-        <p className="mb-1 text-xs font-semibold text-ink">
+        <p className="mb-1 text-xs font-semibold text-on-surface">
           {label}
-          {labelSuffix ? <span className="font-normal text-ink-muted"> {labelSuffix}</span> : null}
+          {labelSuffix ? <span className="font-normal text-on-surface-muted"> {labelSuffix}</span> : null}
         </p>
       ) : null}
 
@@ -42,8 +38,8 @@ export function ChartTooltip({
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-ink-secondary">{entry.name}</span>
-            <span className="ml-auto pl-3 font-semibold tabular-nums text-ink">
+            <span className="text-on-surface-variant">{entry.name}</span>
+            <span className="ml-auto pl-3 font-semibold tabular-nums text-on-surface">
               {formatValue(entry.value ?? null, unit)}
             </span>
           </li>

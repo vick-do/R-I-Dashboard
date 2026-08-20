@@ -1,0 +1,27 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Overview", "x": 0, "y": 0, "w": 1440, "h": 1660 },
+    { "file": "Programme.dc.html", "title": "Programme page", "x": 1600, "y": 0, "w": 1440, "h": 1980 },
+    { "file": "Charts.dc.html", "title": "Chart vocabulary", "x": 3200, "y": 0, "w": 1440, "h": 1840 },
+    { "file": "Provenance.dc.html", "title": "Provenance drawer", "x": 0, "y": 2200, "w": 1440, "h": 1020 },
+    { "file": "Operations.dc.html", "title": "Approvals + Import centre", "x": 1600, "y": 2200, "w": 1440, "h": 1520 },
+    { "file": "Specimen.dc.html", "title": "Type & colour", "x": 3200, "y": 2200, "w": 1440, "h": 1620 }
+  ],
+  "annotations": [
+    {
+      "id": "which-numbers-are-real",
+      "x": -480,
+      "y": 0,
+      "w": 400,
+      "text": "Which numbers are real\n\nReal, from the workbooks and the API:\n1,592 trained · Grow 793 (Accra 402, Whizzy 236, Woman's Haven 155) · Pre-Mest 761/759/758/757 · Web3 26+12=38 · MEST Scale 101 of 112 · EdTech 2026: 38 posts, 2,800,672 impressions, 1,978,763 reach, 7,920 engagement, 230,786 video views.\n\nIllustrative, to show the form:\nthe month-by-month split of the EdTech totals (it sums to the real 2,800,672), the channel shares, the deltas and targets, and every name in the approvals queue.\n\nNothing here invents a headline figure MEST does not have."
+    },
+    {
+      "id": "reading-order",
+      "x": -480,
+      "y": 620,
+      "w": 400,
+      "text": "Reading order\n\n1 · Overview — what the whole organisation reports\n2 · Programme page — the four-part rhythm every programme gets: Change, Composition, Every metric at once, Provenance\n3 · Chart vocabulary — the eleven forms and the job each one does\n4 · Provenance drawer — click any number, anywhere\n5 · Approvals + Import centre — who may change data, and how a workbook gets in\n6 · Type & colour — the foundations everything above is built from"
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

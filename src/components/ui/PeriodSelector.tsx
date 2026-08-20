@@ -1,8 +1,5 @@
 /**
  * Period filter. Sits in one row above the charts, per the interaction spec.
- *
- * Only years that actually have data are offered, so the control can never
- * put the page into an empty state the data could never fill.
  */
 export function PeriodSelector({
   years,
@@ -21,7 +18,11 @@ export function PeriodSelector({
   ];
 
   return (
-    <div className="no-print inline-flex rounded-lg border border-slate-300 bg-surface p-0.5" role="group" aria-label="Period">
+    <div
+      className="no-print inline-flex rounded-md border border-outline-variant bg-surface-container-lowest p-0.5"
+      role="group"
+      aria-label="Period"
+    >
       {options.map((option) => {
         const isActive = option.year === value;
         return (
@@ -30,8 +31,10 @@ export function PeriodSelector({
             type="button"
             aria-pressed={isActive}
             onClick={() => onChange(option.year)}
-            className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-              isActive ? 'bg-brand text-white' : 'text-ink-secondary hover:bg-slate-100'
+            className={`rounded px-3 py-1.5 text-secondary-text font-medium transition ${
+              isActive
+                ? 'bg-primary text-on-primary'
+                : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface'
             }`}
           >
             {option.label}

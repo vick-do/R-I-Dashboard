@@ -1,25 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import type { ProgramNode } from '../../lib/api';
+import { useAuth } from '../../lib/auth';
+import { useDataQuality, useSubmissions } from '../../hooks/useData';
+import {
+  AdminIcon,
+  ApprovalsIcon,
+  ChevronDownIcon,
+  CompareIcon,
+  DashboardIcon,
+  ImportIcon,
+  QualityIcon,
+} from '../ui/Icons';
 
 /**
- * Navigation, built from the programme tree the API returns rather than from a
- * hard-coded list — so adding a programme in the backend makes it appear here
- * with no frontend change.
- *
- * Two behaviours the previous sidebar lacked:
- *   • the branch containing the active page auto-expands, and opening one
- *     branch no longer collapses its siblings;
- *   • container nodes are links in their own right, showing a roll-up of their
- *     children instead of being inert accordion handles.
+ * Navigation, built from the programme tree the API returns rather than from a hard-coded list
+ * — so adding a programme in the backend makes it appear here with no frontend change.
  */
 export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onNavigate?: () => void }) {
   const location = useLocation();
+  const { can } = useAuth();
   const activeKey = location.pathname.startsWith('/p/') ? location.pathname.slice(3) : 'overview';
 
-  // Ancestors of the active page, so the tree opens to reveal it.
   const ancestorKeys = useMemo(() => findAncestors(programs, activeKey), [programs, activeKey]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(ancestorKeys));
+  const [treeOpen, setTreeOpen] = useState(true);
 
   useEffect(() => {
     setExpanded((prev) => new Set([...prev, ...ancestorKeys]));
@@ -34,21 +39,114 @@ export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onN
 
   const roots = programs.filter((p) => p.pageKey !== 'overview');
 
+  // Counted from the data rather than hard-coded, so the badge cannot drift
+  // from what the Data quality page actually shows.
+  const { data: quality } = useDataQuality(undefined);
+  const issueCount = quality?.counts.total ?? 0;
+
+  const { data: queue } = useSubmissions('pending');
+  const waiting = queue?.counts.total ?? 0;
+
   return (
-    <nav className="flex h-full flex-col gap-1 overflow-y-auto p-3" aria-label="Programmes">
-      <NavItem to="/" label="Overview" depth={0} onNavigate={onNavigate} end className="w-full" />
-      <div className="my-2 border-t border-slate-200" />
-      {roots.map((node) => (
-        <TreeNode
-          key={node.pageKey}
-          node={node}
+    <nav className="flex h-full flex-col gap-1 px-3 py-4" aria-label="Main">
+      <SectionLabel>Reporting</SectionLabel>
+      <NavItem to="/" label="Overview" depth={0} onNavigate={onNavigate} end icon={<DashboardIcon className="h-5 w-5" />} />
+      <NavItem to="/compare" label="Compare programmes" depth={0} onNavigate={onNavigate} icon={<CompareIcon className="h-5 w-5" />} />
+
+      <SectionLabel
+        className="pt-5"
+        expanded={treeOpen}
+        onToggle={() => setTreeOpen((open) => !open)}
+      >
+        Programmes
+      </SectionLabel>
+      {treeOpen
+        ? roots.map((node) => (
+            <TreeNode
+              key={node.pageKey}
+              node={node}
+              depth={0}
+              expanded={expanded}
+              onToggle={toggle}
+              onNavigate={onNavigate}
+            />
+          ))
+        : null}
+
+      <SectionLabel className="pt-5">Operations</SectionLabel>
+      <NavItem
+        to="/approvals"
+        label="Approvals"
+        depth={0}
+        onNavigate={onNavigate}
+        icon={<ApprovalsIcon className="h-5 w-5" />}
+        badge={waiting || undefined}
+      />
+      {can('editor') ? (
+        <NavItem
+          to="/imports"
+          label="Connected sheets"
           depth={0}
-          expanded={expanded}
-          onToggle={toggle}
           onNavigate={onNavigate}
+          icon={<ImportIcon className="h-5 w-5" />}
         />
-      ))}
+      ) : null}
+      <NavItem
+        to="/quality"
+        label="Data quality"
+        depth={0}
+        onNavigate={onNavigate}
+        icon={<QualityIcon className="h-5 w-5" />}
+        badge={issueCount || undefined}
+      />
+      {can('admin') ? (
+        <NavItem
+          to="/admin"
+          label="Administration"
+          depth={0}
+          onNavigate={onNavigate}
+          icon={<AdminIcon className="h-5 w-5" />}
+        />
+      ) : null}
     </nav>
+  );
+}
+
+function SectionLabel({
+  children,
+  className = '',
+  expanded,
+  onToggle,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  expanded?: boolean;
+  onToggle?: () => void;
+}) {
+  const content = (
+    <>
+      <span>{children}</span>
+      {onToggle ? (
+        <ChevronDownIcon className={`h-4 w-4 transition-transform ${expanded ? '' : '-rotate-90'}`} />
+      ) : null}
+    </>
+  );
+
+  if (!onToggle) {
+    return (
+      <div className={`px-3 pb-1 pt-1 text-label-caps uppercase text-on-surface-muted ${className}`}>{children}</div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      className={`flex w-full items-center justify-between px-3 pb-1 pt-1 text-label-caps uppercase text-on-surface-muted transition hover:text-on-surface ${className}`}
+    >
+      {content}
+    </button>
   );
 }
 
@@ -71,33 +169,16 @@ function TreeNode({
   return (
     <div>
       <div className="flex items-stretch gap-0.5">
-        <NavItem
-          to={`/p/${node.pageKey}`}
-          label={node.name}
-          depth={depth}
-          onNavigate={onNavigate}
-          className="min-w-0 flex-1"
-        />
+        <NavItem to={`/p/${node.pageKey}`} label={node.name} depth={depth} onNavigate={onNavigate} className="min-w-0 flex-1" />
         {hasChildren ? (
           <button
             type="button"
             onClick={() => onToggle(node.pageKey)}
             aria-expanded={isOpen}
             aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${node.name}`}
-            className="shrink-0 rounded-lg px-2 text-ink-muted transition hover:bg-slate-100 hover:text-ink"
+            className="shrink-0 rounded-md px-2 text-on-surface-muted transition hover:bg-surface-variant hover:text-on-surface"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className={`h-3.5 w-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
+            <ChevronDownIcon className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </button>
         ) : null}
       </div>
@@ -127,18 +208,17 @@ function NavItem({
   onNavigate,
   end = false,
   className = '',
+  icon,
+  badge,
 }: {
   to: string;
   label: string;
   depth: number;
   onNavigate?: () => void;
   end?: boolean;
-  /**
-   * Sizing is the caller's business. `flex-1` belongs only to the row that
-   * pairs this link with an expand button — applied unconditionally it also
-   * made the standalone Overview link grow to fill the drawer's full height.
-   */
   className?: string;
+  icon?: React.ReactNode;
+  badge?: number;
 }) {
   return (
     <NavLink
@@ -147,14 +227,20 @@ function NavItem({
       onClick={onNavigate}
       style={{ paddingLeft: `${0.75 + depth * 0.75}rem` }}
       className={({ isActive }) =>
-        `block truncate rounded-lg py-2 pr-2 text-left text-sm transition ${className} ${
+        `relative flex items-center gap-3 rounded-md py-2 pr-2 text-left text-body-text transition ${className} ${
           isActive
-            ? 'bg-brand-tint font-semibold text-brand-dark'
-            : 'text-ink-secondary hover:bg-slate-100 hover:text-ink'
+            ? 'bg-primary-container font-semibold text-on-primary-container after:absolute after:inset-y-1 after:right-0 after:w-0.5 after:rounded-full after:bg-primary after:content-[""]'
+            : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface'
         }`
       }
     >
-      {label}
+      {icon ? <span className="shrink-0">{icon}</span> : null}
+      <span className="truncate">{label}</span>
+      {badge ? (
+        <span className="ml-auto shrink-0 rounded-full bg-status-danger-container px-2 py-0.5 text-xs font-semibold text-status-on-danger-container">
+          {badge}
+        </span>
+      ) : null}
     </NavLink>
   );
 }

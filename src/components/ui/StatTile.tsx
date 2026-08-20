@@ -1,72 +1,113 @@
-import type { Unit } from '../../lib/api';
+import type { Basis, Delta, Unit } from '../../lib/api';
 import { formatValue } from '../../lib/format';
+import { Sparkline } from './Sparkline';
+import { WarningIcon } from './Icons';
 
 /**
  * A single headline figure.
- *
- * Per the data-viz form heuristic, a handful of headline numbers is a KPI row
- * of stat tiles — not a bar chart of one bar each.
- *
- * `basis` is surfaced rather than hidden: a figure summed from a breakdown is
- * labelled as such, so a derived number is never presented as a recorded one.
  */
-export type StatTileProps = {
-  label: string;
-  value: number | null;
-  unit?: Unit;
-  detail?: string;
-  basis?: 'recorded_total' | 'derived_from_breakdown' | 'no_data';
-  derivedFrom?: string[] | null;
-  emphasis?: boolean;
-};
-
 export function StatTile({
   label,
   value,
   unit = 'count',
   detail,
   basis,
-  derivedFrom,
-  emphasis = false,
-}: StatTileProps) {
-  const noData = value === null || basis === 'no_data';
+  delta,
+  series = [],
+  description,
+  onRecord,
+  warning,
+}: {
+  label: string;
+  value: number | null;
+  unit?: Unit;
+  detail?: string;
+  basis?: Basis;
+  delta?: Delta | null;
+  series?: Array<{ year: number; value: number }>;
+  description?: string | null;
+  /** Shown to editors when the figure has never been recorded. */
+  onRecord?: () => void;
+  /** Set when the metric's own definition is unresolved. */
+  warning?: string;
+}) {
+  const missing = value === null || basis === 'no_data';
 
   return (
     <div
-      className={`flex flex-col gap-2 rounded-xl border p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-soft ${
-        emphasis ? 'border-brand bg-brand text-white shadow-card' : 'border-slate-200 bg-surface shadow-card'
+      className={`flex flex-col rounded-lg border p-card-padding ${
+        missing ? 'border-dashed border-outline bg-surface-container-lowest' : 'border-outline-variant bg-surface-container-lowest'
       }`}
     >
-      <p
-        className={`text-[0.7rem] font-medium uppercase tracking-wider ${
-          emphasis ? 'text-white/80' : 'text-ink-muted'
-        }`}
-      >
-        {label}
-      </p>
+      {/* The label reserves two lines whether or not it needs them, so a row of
+          tiles keeps one baseline for its figures — "Total no. of businesses
+          supported" wraps and "Total jobs created" does not. */}
+      <div className="flex min-h-[2rem] items-start justify-between gap-3">
+        <span className="text-label-caps uppercase text-on-surface-muted" title={description ?? undefined}>
+          {label}
+        </span>
+        {delta ? <DeltaBadge delta={delta} /> : null}
+      </div>
 
-      <p
-        className={`text-2xl font-bold leading-tight ${
-          emphasis ? 'text-white' : noData ? 'text-ink-muted' : 'text-ink'
-        }`}
-      >
-        {noData ? 'No data yet' : formatValue(value, unit)}
-      </p>
-
-      {/* Every colour here is stated on both branches so the emphasised tile
-          never inherits a low-contrast neutral onto its brand fill. */}
-      {detail ? (
-        <p className={`text-xs ${emphasis ? 'text-white/85' : 'text-ink-secondary'}`}>{detail}</p>
-      ) : null}
-
-      {basis === 'derived_from_breakdown' ? (
-        <p
-          className={`text-[0.68rem] ${emphasis ? 'text-white/75' : 'text-ink-muted'}`}
-          title="No overall total was recorded for this metric, so it is summed from the breakdown."
+      <div className="mb-3 mt-3 flex items-end justify-between gap-3">
+        <span
+          className={missing ? 'text-kpi-value text-on-surface-muted' : 'text-kpi-value text-on-surface'}
+          aria-label={missing ? 'Not yet recorded' : undefined}
         >
-          Summed across {derivedFrom?.map((d) => d.toLowerCase()).join(' × ') ?? 'breakdown'}
-        </p>
-      ) : null}
+          {missing ? '—' : formatValue(value, unit)}
+        </span>
+        {series.length > 1 ? (
+          <Sparkline
+            points={series.map((p) => p.value)}
+            label={`${label} from ${series[0].year} to ${series[series.length - 1].year}`}
+          />
+        ) : null}
+      </div>
+
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-outline-variant pt-3">
+        {warning ? (
+          <span className="flex items-center gap-1.5 text-secondary-text text-status-serious">
+            <WarningIcon className="h-3.5 w-3.5 shrink-0" />
+            {warning}
+          </span>
+        ) : (
+          <span className="text-secondary-text text-on-surface-variant">
+            {missing ? 'Not yet recorded' : detail}
+          </span>
+        )}
+
+        {missing && onRecord ? (
+          <button
+            type="button"
+            onClick={onRecord}
+            className="shrink-0 text-secondary-text font-medium text-primary transition hover:text-primary-hover hover:underline"
+          >
+            Add
+          </button>
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+/**
+ * Change against the prior year.
+ */
+function DeltaBadge({ delta }: { delta: Delta }) {
+  const rising = delta.change > 0;
+  const flat = delta.change === 0;
+
+  return (
+    <span
+      className="flex shrink-0 items-center gap-0.5 rounded bg-primary-container px-1.5 py-0.5 text-xs font-semibold text-on-primary-container"
+      title={`${delta.fromYear}: ${delta.from.toLocaleString('en-GB')} → ${delta.toYear}: ${delta.to.toLocaleString('en-GB')}`}
+    >
+      {flat ? null : (
+        <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          {rising ? <path d="M12 19V5M5 12l7-7 7 7" /> : <path d="M12 5v14M5 12l7 7 7-7" />}
+        </svg>
+      )}
+      {flat ? 'No change' : `${Math.abs(delta.percent).toFixed(0)}%`}
+    </span>
   );
 }

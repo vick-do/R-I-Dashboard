@@ -2,9 +2,6 @@ import type { Unit } from './api';
 
 /**
  * Number formatting.
- *
- * `formatValue` is the only place a figure becomes text, so a count, a currency
- * amount and a rate can never be rendered with the wrong shape.
  */
 export function formatValue(value: number | null | undefined, unit: Unit = 'count'): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '—';

@@ -1,0 +1,309 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+  <style>
+    body { margin: 0; background: #f2eee5; }
+    * { box-sizing: border-box; }
+    a { color: #0a6271; text-decoration: none; }
+    a:hover { color: #0e8fa2; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; min-height: 1840px; background: #f7f4ee; font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; color: #12100c; padding: 44px 48px 52px 48px;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; padding-bottom: 22px; border-bottom: 2px solid #12100c;">
+    <div style="max-width: 760px;">
+      <div style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; color: #8a8375; margin-bottom: 10px;">CHART VOCABULARY</div>
+      <div style="font-family: Newsreader, Georgia, serif; font-size: 44px; line-height: 1.06; letter-spacing: -0.012em;">Eleven forms. Each one answers a different question.</div>
+      <div style="font-size: 13.5px; color: #4a463d; margin-top: 12px; line-height: 1.6;">
+        Today the dashboard has two forms and uses them for everything. The form is chosen by what the reader
+        has to do — compare magnitude, tell series apart, judge a share, follow a conversion — and only then
+        does colour get assigned.
+      </div>
+    </div>
+    <div style="flex-shrink: 0; text-align: right;">
+      <div style="font-size: 11.5px; color: #8a8375; line-height: 1.8;">
+        Palette validated · 7 categorical slots<br>
+        Worst adjacent CVD ΔE 7.2 · normal-vision ΔE 19.6<br>
+        One axis always · legend for two or more series<br>
+        Every form ships a table view
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 26px;">
+
+    <!-- 1 · stat tile -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">01</div>
+        <div style="font-size: 14px; font-weight: 600;">Stat tile</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 15px 16px; background: #fdfcfa;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: #8a8375;">PEOPLE TRAINED</div>
+        <div style="display: flex; align-items: flex-end; gap: 10px; margin-top: 6px;">
+          <div style="font-size: 32px; font-weight: 600; line-height: 0.95; letter-spacing: -0.025em;">1,592</div>
+          <svg width="58" height="24" viewBox="0 0 58 24" fill="none" style="margin-bottom: 3px;"><path d="M1 21L10 19L19 15L29 14L38 8L48 5L57 2" stroke="#0e8fa2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="57" cy="2" r="2.4" fill="#0e8fa2" stroke="#fff" stroke-width="1.8"/></svg>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px; margin-top: 9px;">
+          <span style="background: #e7f5e7; color: #0b6b0b; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px;">+34%</span>
+          <span style="font-size: 11px; color: #8a8375;">vs prior year</span>
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">One headline number.</strong> Carries its own delta, sparkline and basis badge — never a one-bar bar chart.</div>
+    </div>
+
+    <!-- 2 · bullet -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">02</div>
+        <div style="font-size: 14px; font-weight: 600;">Bullet bar</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 18px 16px; background: #fdfcfa; display: flex; flex-direction: column; gap: 13px;">
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #4a463d; margin-bottom: 6px;"><span>Learners trained</span><span style="font-weight: 600; color: #12100c;">1,592 / 2,000</span></div>
+          <div style="position: relative; height: 16px; background: #f0ece3; border-radius: 3px;">
+            <div style="width: 79.6%; height: 16px; background: #0e8fa2; border-radius: 3px;"></div>
+            <div style="position: absolute; left: 100%; top: -4px; width: 2px; height: 24px; background: #12100c;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #4a463d; margin-bottom: 6px;"><span>Businesses supported</span><span style="font-weight: 600; color: #12100c;">112 / 100</span></div>
+          <div style="position: relative; height: 16px; background: #f0ece3; border-radius: 3px;">
+            <div style="width: 100%; height: 16px; background: #0e8fa2; border-radius: 3px;"></div>
+            <div style="position: absolute; left: 89%; top: -4px; width: 2px; height: 24px; background: #12100c;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Actual against a target.</strong> The single highest-value addition for a funder audience — needs the new targets model.</div>
+    </div>
+
+    <!-- 3 · ranked bar with emphasis -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">03</div>
+        <div style="font-size: 14px; font-weight: 600;">Ranked bar · emphasis</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 84px; font-size: 10.5px; text-align: right; color: #12100c; font-weight: 600;">Accra</div><div style="width: 158px; height: 17px; background: #0e8fa2; border-radius: 3px;"></div><div style="font-size: 11px; font-weight: 600;">402</div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 84px; font-size: 10.5px; text-align: right; color: #8a8375;">Whizzy</div><div style="width: 93px; height: 17px; background: #cfcabd; border-radius: 3px;"></div><div style="font-size: 11px; color: #4a463d;">236</div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 84px; font-size: 10.5px; text-align: right; color: #8a8375;">Woman's Haven</div><div style="width: 61px; height: 17px; background: #cfcabd; border-radius: 3px;"></div><div style="font-size: 11px; color: #4a463d;">155</div></div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">One category is the story.</strong> Highlight it, grey the rest. The most underused form — and the honest answer to "make this clearer".</div>
+    </div>
+
+    <!-- 4 · small multiples -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">04</div>
+        <div style="font-size: 14px; font-weight: 600;">Small multiples</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 9px; color: #8a8375;">Impressions</div><svg width="100%" height="30" viewBox="0 0 90 30" preserveAspectRatio="none"><path d="M1 22 L18 19 L36 15 L54 12 L72 7 L89 4" stroke="#0e8fa2" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 9px; color: #8a8375;">Reach</div><svg width="100%" height="30" viewBox="0 0 90 30" preserveAspectRatio="none"><path d="M1 24 L18 21 L36 18 L54 14 L72 10 L89 8" stroke="#0e8fa2" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 9px; color: #8a8375;">Views</div><svg width="100%" height="30" viewBox="0 0 90 30" preserveAspectRatio="none"><path d="M1 25 L18 20 L36 22 L54 13 L72 15 L89 6" stroke="#0e8fa2" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 9px; color: #8a8375;">Engagement</div><svg width="100%" height="30" viewBox="0 0 90 30" preserveAspectRatio="none"><path d="M1 18 L18 21 L36 16 L54 18 L72 12 L89 9" stroke="#0e8fa2" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 9px; color: #8a8375;">Shares</div><svg width="100%" height="30" viewBox="0 0 90 30" preserveAspectRatio="none"><path d="M1 23 L18 19 L36 21 L54 16 L72 17 L89 11" stroke="#0e8fa2" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 9px; color: #8a8375;">Clicks</div><svg width="100%" height="30" viewBox="0 0 90 30" preserveAspectRatio="none"><path d="M1 17 L18 20 L36 15 L54 19 L72 13 L89 14" stroke="#0e8fa2" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg></div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Many measures, one glance.</strong> This is what replaces twelve identical stacked charts on EdTech Mondays.</div>
+    </div>
+
+    <!-- 5 · stacked area -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">05</div>
+        <div style="font-size: 14px; font-weight: 600;">Stacked area</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 14px; background: #fdfcfa;">
+        <svg width="100%" height="112" viewBox="0 0 340 112" preserveAspectRatio="none">
+          <path d="M0 112 L0 78 L68 72 L136 64 L204 55 L272 47 L340 40 L340 112 Z" fill="#0e8fa2"/>
+          <path d="M0 78 L68 72 L136 64 L204 55 L272 47 L340 40" stroke="#fdfcfa" stroke-width="2" fill="none"/>
+          <path d="M0 78 L68 72 L136 64 L204 55 L272 47 L340 40 L340 20 L272 26 L204 30 L136 38 L68 44 L0 48 Z" fill="#eb6834"/>
+          <path d="M0 48 L68 44 L136 38 L204 30 L272 26 L340 20" stroke="#fdfcfa" stroke-width="2" fill="none"/>
+          <path d="M0 48 L68 44 L136 38 L204 30 L272 26 L340 20 L340 6 L272 9 L204 12 L136 17 L68 22 L0 26 Z" fill="#4a3aa7"/>
+        </svg>
+        <div style="display: flex; gap: 12px; margin-top: 10px;">
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #0e8fa2;"></span>MEST</div>
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #eb6834;"></span>Citi FM</div>
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #4a3aa7;"></span>Channel One</div>
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Composition changing over time.</strong> Categorical colour, because telling the channels apart <em>is</em> the task.</div>
+    </div>
+
+    <!-- 6 · 100% stacked bar -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">06</div>
+        <div style="font-size: 14px; font-weight: 600;">100% stacked bar</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa; display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <div style="font-size: 10.5px; color: #4a463d; margin-bottom: 6px;">Grow</div>
+          <div style="display: flex; gap: 2px; height: 20px;"><div style="width: 62%; background: #0e8fa2; border-radius: 3px 0 0 3px;"></div><div style="width: 38%; background: #eb6834; border-radius: 0 3px 3px 0;"></div></div>
+        </div>
+        <div>
+          <div style="font-size: 10.5px; color: #4a463d; margin-bottom: 6px;">Pre&#8209;Mest</div>
+          <div style="display: flex; gap: 2px; height: 20px;"><div style="width: 47%; background: #0e8fa2; border-radius: 3px 0 0 3px;"></div><div style="width: 53%; background: #eb6834; border-radius: 0 3px 3px 0;"></div></div>
+        </div>
+        <div>
+          <div style="font-size: 10.5px; color: #4a463d; margin-bottom: 6px;">Web3</div>
+          <div style="display: flex; gap: 2px; height: 20px;"><div style="width: 68%; background: #0e8fa2; border-radius: 3px 0 0 3px;"></div><div style="width: 32%; background: #eb6834; border-radius: 0 3px 3px 0;"></div></div>
+        </div>
+        <div style="display: flex; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #0e8fa2;"></span>Female</div>
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #eb6834;"></span>Male</div>
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Part-to-whole across items.</strong> Answers "what is the gender split" without three separate pies.</div>
+    </div>
+
+    <!-- 7 · funnel -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">07</div>
+        <div style="font-size: 14px; font-weight: 600;">Funnel cascade</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa; display: flex; flex-direction: column; gap: 6px;">
+        <div style="width: 100%; height: 30px; background: #33a3b6; border-radius: 4px; display: flex; align-items: center; padding: 0 11px; font-size: 11px; color: #06333b; font-weight: 600;">Enrolled <span style="margin-left: auto;">793</span></div>
+        <div style="width: 76%; height: 30px; background: #0e8fa2; border-radius: 4px; display: flex; align-items: center; padding: 0 11px; font-size: 11px; color: #fff; font-weight: 600;">Graduated <span style="margin-left: auto;">604</span></div>
+        <div style="width: 48%; height: 30px; background: #0b5c69; border-radius: 4px; display: flex; align-items: center; padding: 0 11px; font-size: 11px; color: #fff; font-weight: 600;">Employed <span style="margin-left: auto;">381</span></div>
+        <div style="font-size: 10.5px; color: #8a8375; margin-top: 4px;">76% graduate · 63% of graduates employed</div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Ordered stages of one journey.</strong> Ordinal ramp — one hue, darkening — because the stages have a natural order.</div>
+    </div>
+
+    <!-- 8 · slope -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">08</div>
+        <div style="font-size: 14px; font-weight: 600;">Slope chart</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa;">
+        <svg width="100%" height="118" viewBox="0 0 340 118">
+          <text x="26" y="12" font-family="Archivo" font-size="10" fill="#8a8375">2025</text>
+          <text x="314" y="12" font-family="Archivo" font-size="10" fill="#8a8375" text-anchor="end">2026</text>
+          <line x1="70" y1="20" x2="70" y2="112" stroke="#e6e1d6" stroke-width="1"/>
+          <line x1="270" y1="20" x2="270" y2="112" stroke="#e6e1d6" stroke-width="1"/>
+          <path d="M70 88 L270 34" stroke="#0e8fa2" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="70" cy="88" r="3.6" fill="#0e8fa2"/><circle cx="270" cy="34" r="3.6" fill="#0e8fa2"/>
+          <text x="62" y="92" font-family="Archivo" font-size="10" fill="#4a463d" text-anchor="end">Grow</text>
+          <text x="278" y="38" font-family="Archivo" font-size="10" font-weight="600" fill="#12100c">793</text>
+          <path d="M70 62 L270 72" stroke="#cfcabd" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="70" cy="62" r="3.6" fill="#cfcabd"/><circle cx="270" cy="72" r="3.6" fill="#cfcabd"/>
+          <text x="62" y="66" font-family="Archivo" font-size="10" fill="#8a8375" text-anchor="end">Pre&#8209;Mest</text>
+          <text x="278" y="76" font-family="Archivo" font-size="10" fill="#4a463d">761</text>
+          <path d="M70 104 L270 100" stroke="#cfcabd" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="70" cy="104" r="3.6" fill="#cfcabd"/><circle cx="270" cy="100" r="3.6" fill="#cfcabd"/>
+          <text x="62" y="108" font-family="Archivo" font-size="10" fill="#8a8375" text-anchor="end">Web3</text>
+          <text x="278" y="104" font-family="Archivo" font-size="10" fill="#4a463d">38</text>
+        </svg>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Which programmes moved, year on year.</strong> Rank change is visible as slope — no reading two bar charts side by side.</div>
+    </div>
+
+    <!-- 9 · heatmap -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">09</div>
+        <div style="font-size: 14px; font-weight: 600;">Heatmap</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa; display: flex; flex-direction: column; gap: 3px;">
+        <div style="display: flex; gap: 3px;"><div style="flex-grow: 1; height: 21px; background: #a3d7e0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #6dc0cd; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #33a3b6; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #0e8fa2; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #0e8fa2; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #0a6271; border-radius: 2px;"></div></div>
+        <div style="display: flex; gap: 3px;"><div style="flex-grow: 1; height: 21px; background: #d3ebf0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #a3d7e0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #6dc0cd; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #6dc0cd; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #0e8fa2; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #0e8fa2; border-radius: 2px;"></div></div>
+        <div style="display: flex; gap: 3px;"><div style="flex-grow: 1; height: 21px; background: #eef7f9; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #d3ebf0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #a3d7e0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #a3d7e0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #6dc0cd; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #33a3b6; border-radius: 2px;"></div></div>
+        <div style="display: flex; gap: 3px;"><div style="flex-grow: 1; height: 21px; background: #eef7f9; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #eef7f9; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #d3ebf0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #d3ebf0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #a3d7e0; border-radius: 2px;"></div><div style="flex-grow: 1; height: 21px; background: #6dc0cd; border-radius: 2px;"></div></div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">A grid of magnitudes.</strong> Sequential single hue, light to dark. Never a rainbow, never one hue per row.</div>
+    </div>
+
+    <!-- 10 · waterfall -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">10</div>
+        <div style="font-size: 14px; font-weight: 600;">Waterfall</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa;">
+        <svg width="100%" height="118" viewBox="0 0 340 118">
+          <line x1="0" y1="100" x2="340" y2="100" stroke="#e6e1d6" stroke-width="1"/>
+          <rect x="14" y="52" width="52" height="48" rx="3" fill="#0e8fa2"/>
+          <text x="40" y="46" font-family="Archivo" font-size="10" font-weight="600" fill="#12100c" text-anchor="middle">793</text>
+          <text x="40" y="113" font-family="Archivo" font-size="9.5" fill="#8a8375" text-anchor="middle">Grow</text>
+          <rect x="86" y="6" width="52" height="46" rx="3" fill="#0e8fa2"/>
+          <text x="112" y="0" font-family="Archivo" font-size="10" fill="#12100c" text-anchor="middle"></text>
+          <text x="112" y="113" font-family="Archivo" font-size="9.5" fill="#8a8375" text-anchor="middle">Pre&#8209;Mest</text>
+          <rect x="158" y="4" width="52" height="2" rx="1" fill="#0e8fa2"/>
+          <text x="184" y="113" font-family="Archivo" font-size="9.5" fill="#8a8375" text-anchor="middle">Web3</text>
+          <rect x="230" y="4" width="52" height="96" rx="3" fill="#12100c"/>
+          <text x="256" y="113" font-family="Archivo" font-size="9.5" fill="#4a463d" text-anchor="middle" font-weight="600">Total</text>
+          <text x="256" y="60" font-family="Archivo" font-size="11" font-weight="600" fill="#f7f4ee" text-anchor="middle">1,592</text>
+          <line x1="66" y1="52" x2="86" y2="52" stroke="#cfcabd" stroke-width="1" stroke-dasharray="0"/>
+          <line x1="138" y1="6" x2="158" y2="6" stroke="#cfcabd" stroke-width="1"/>
+          <line x1="210" y1="4" x2="230" y2="4" stroke="#cfcabd" stroke-width="1"/>
+        </svg>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">How the total is built.</strong> Shows the org figure as the sum of its parts — the visual proof that nothing was typed in.</div>
+    </div>
+
+    <!-- 11 · dumbbell -->
+    <div style="background: #fff; border: 1px solid #ddd7ca; border-radius: 11px; padding: 20px 22px 22px 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 9px;">
+        <div style="font-size: 10.5px; font-weight: 700; color: #0e8fa2;">11</div>
+        <div style="font-size: 14px; font-weight: 600;">Dumbbell</div>
+      </div>
+      <div style="border: 1px solid #eee9df; border-radius: 8px; padding: 16px; background: #fdfcfa;">
+        <svg width="100%" height="118" viewBox="0 0 340 118">
+          <text x="4" y="24" font-family="Archivo" font-size="10" fill="#4a463d">Accra</text>
+          <line x1="90" y1="20" x2="266" y2="20" stroke="#dcd6c9" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="90" cy="20" r="5" fill="#9dd2db"/><circle cx="266" cy="20" r="5" fill="#0e8fa2"/>
+          <text x="4" y="60" font-family="Archivo" font-size="10" fill="#4a463d">Whizzy</text>
+          <line x1="112" y1="56" x2="196" y2="56" stroke="#dcd6c9" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="112" cy="56" r="5" fill="#9dd2db"/><circle cx="196" cy="56" r="5" fill="#0e8fa2"/>
+          <text x="4" y="96" font-family="Archivo" font-size="10" fill="#4a463d">W. Haven</text>
+          <line x1="128" y1="92" x2="164" y2="92" stroke="#dcd6c9" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="128" cy="92" r="5" fill="#9dd2db"/><circle cx="164" cy="92" r="5" fill="#0e8fa2"/>
+          <circle cx="284" cy="112" r="4.5" fill="#9dd2db"/><text x="294" y="115" font-family="Archivo" font-size="9.5" fill="#8a8375">2025</text>
+          <circle cx="284" cy="112" r="0" fill="none"/>
+        </svg>
+        <div style="display: flex; gap: 12px; margin-top: 2px;">
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #9dd2db;"></span>2025</div>
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 10px; color: #4a463d;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #0e8fa2;"></span>2026</div>
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: #4a463d; line-height: 1.55;"><strong style="font-weight: 600;">Before and after, per item.</strong> Two shades of one hue — the gap is the message, not the identity of each end.</div>
+    </div>
+
+    <!-- rules card -->
+    <div style="background: #12100c; border-radius: 11px; padding: 22px 24px; color: #f2eee5; display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-family: Newsreader, Georgia, serif; font-size: 20px; line-height: 1.3;">What every one of them obeys</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; line-height: 1.5; color: #c9c3b6;">
+        <div style="display: flex; gap: 9px;"><span style="color: #7fd3de; flex-shrink: 0;">—</span>One y-axis. Two measures of different scale get two charts, never a second scale.</div>
+        <div style="display: flex; gap: 9px;"><span style="color: #7fd3de; flex-shrink: 0;">—</span>Colour follows the entity, not its rank. Filtering never repaints the survivors.</div>
+        <div style="display: flex; gap: 9px;"><span style="color: #7fd3de; flex-shrink: 0;">—</span>Nominal categories get one hue for every bar; length already carries the value.</div>
+        <div style="display: flex; gap: 9px;"><span style="color: #7fd3de; flex-shrink: 0;">—</span>Past seven series, fold the tail into "Other" or facet. Never an eighth generated hue.</div>
+        <div style="display: flex; gap: 9px;"><span style="color: #7fd3de; flex-shrink: 0;">—</span>Selective direct labels — the endpoint, the extreme — never a number on every point.</div>
+        <div style="display: flex; gap: 9px;"><span style="color: #7fd3de; flex-shrink: 0;">—</span>A table view on every chart, and hover that enhances rather than gates.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
