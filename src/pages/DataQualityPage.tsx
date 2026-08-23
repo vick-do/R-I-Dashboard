@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useDataQuality } from '../hooks/useData';
 import { errorMessage, type QualityIssue } from '../lib/api';
 import { formatValue } from '../lib/format';
-import { usePeriod } from '../lib/period';
 import { PageHeader } from '../components/layout/DashboardLayout';
 import { Card, EmptyState, ErrorState, Skeleton } from '../components/ui/Card';
 import { Panel } from '../components/ui/Panel';
@@ -20,8 +19,9 @@ const KIND_LABELS: Record<string, string> = {
  * Where the recorded data disagrees with itself.
  */
 export function DataQualityPage() {
-  const { year } = usePeriod();
-  const quality = useDataQuality(year);
+  // Audits everything rather than one period — the page offers no period
+  // control, so inheriting one would filter the list invisibly.
+  const quality = useDataQuality(undefined);
   const [kind, setKind] = useState('all');
 
   if (quality.isLoading) {

@@ -9,6 +9,16 @@ export type BarRow = {
   share?: number | null;
   /** Marks a figure the API summed from a breakdown rather than read directly. */
   derived?: boolean;
+  /**
+   * Colour slot for this category, from the dimension catalog's own order.
+   *
+   * Given, the category keeps one colour everywhere it appears — Accra is the
+   * same hue in the hub chart, the cohort comparison and the donut, so the
+   * reader learns the key once. Omitted, every bar takes the single default
+   * hue, which is right when the categories appear nowhere else and length
+   * already carries the whole story.
+   */
+  slot?: number;
 };
 
 /**
@@ -65,7 +75,10 @@ export function BarList({
             >
               <div
                 className="h-full rounded"
-                style={{ width: `${width}%`, backgroundColor: dimmed ? MUTED_MARK : seriesColor(0) }}
+                style={{
+                  width: `${width}%`,
+                  backgroundColor: dimmed ? MUTED_MARK : seriesColor(row.slot ?? 0),
+                }}
               />
             </div>
           </>

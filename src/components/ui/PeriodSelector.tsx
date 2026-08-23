@@ -1,5 +1,11 @@
+import { selectClass } from './Field';
+
 /**
- * Period filter. Sits in one row above the charts, per the interaction spec.
+ * The global period filter.
+ *
+ * A dropdown rather than a segmented control: the year list grows with the data
+ * — Grow alone spans 2024, 2025 and 2026 — and a row of buttons that widens
+ * every time a year is added eventually crowds the top bar off the screen.
  */
 export function PeriodSelector({
   years,
@@ -12,35 +18,25 @@ export function PeriodSelector({
 }) {
   if (years.length === 0) return null;
 
-  const options: Array<{ label: string; year: number | undefined }> = [
-    { label: 'All time', year: undefined },
-    ...years.map((year) => ({ label: String(year), year })),
-  ];
-
   return (
-    <div
-      className="no-print inline-flex rounded-md border border-outline-variant bg-surface-container-lowest p-0.5"
-      role="group"
-      aria-label="Period"
-    >
-      {options.map((option) => {
-        const isActive = option.year === value;
-        return (
-          <button
-            key={option.label}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => onChange(option.year)}
-            className={`rounded px-3 py-1.5 text-secondary-text font-medium transition ${
-              isActive
-                ? 'bg-primary text-on-primary'
-                : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface'
-            }`}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
+    <label className="no-print flex items-center gap-2">
+      <span className="sr-only">Period</span>
+      <select
+        value={value === undefined ? 'all' : String(value)}
+        onChange={(event) => {
+          const next = event.target.value;
+          onChange(next === 'all' ? undefined : Number(next));
+        }}
+        className={`${selectClass} w-auto min-w-[8.5rem] font-medium`}
+        aria-label="Period"
+      >
+        <option value="all">All time</option>
+        {[...years].sort((a, b) => b - a).map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

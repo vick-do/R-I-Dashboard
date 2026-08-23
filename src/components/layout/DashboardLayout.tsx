@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { usePrograms, useScorecard, flattenPrograms } from '../../hooks/useData';
+import { usePrograms, useProgramSummary, useScorecard, flattenPrograms } from '../../hooks/useData';
 import { useAuth } from '../../lib/auth';
 import { PeriodProvider, usePeriod } from '../../lib/period';
 import { Sidebar } from './Sidebar';
@@ -122,10 +122,44 @@ function TopBar({
   const { year, setYear } = usePeriod();
   const trail = useBreadcrumb(programs ?? [], location.pathname);
 
-  // Years the organisation actually holds data for. Shares a cache key with the
-  // Overview's own all-time scorecard call, so this costs one request, not two.
-  const { data } = useScorecard(undefined);
-  const years = data?.years ?? [];
+  /**
+   * Which years the filter should offer depends on what is on screen.
+   *
+   * A programme that only ever recorded all-time figures — Web3, Pre-Mest,
+   * MEST Scale — gains nothing from a year filter, and picking one just empties
+   * the page. So a programme page offers its own years and nothing else, the
+   * reporting pages offer the organisation's, and the operations screens have
+   * no period at all.
+   */
+  const programmeKey = location.pathname.startsWith('/p/') ? location.pathname.slice(3) : undefined;
+  const isReporting = location.pathname === '/' || location.pathname === '/compare';
+
+  // Same cache keys the pages themselves use, so neither costs an extra request.
+  const scorecard = useScorecard(undefined);
+  const summary = useProgramSummary(programmeKey, year);
+
+  const years = programmeKey
+    ? (summary.data?.availableYears ?? [])
+    : isReporting
+      ? (scorecard.data?.years ?? [])
+      : [];
+
+  // Only judge a selection once the page's own year list has actually arrived —
+  // an empty list mid-fetch is not the same as a page with no years.
+  const yearsLoaded = programmeKey ? summary.isSuccess : isReporting ? scorecard.isSuccess : true;
+
+  /**
+   * Drop a year the page cannot show.
+   *
+   * The period is deliberately global — it survives navigation so a reader can
+   * hold 2025 still while moving between programmes. But carrying it onto a
+   * programme that has no 2025, or none at all, produced an empty page reading
+   * "No data recorded for 2024" with no clue that a filter was the cause.
+   */
+  useEffect(() => {
+    if (!yearsLoaded) return;
+    if (year !== undefined && !years.includes(year)) setYear(undefined);
+  }, [year, yearsLoaded, years.join(','), setYear]);
 
   return (
     <header className="no-print sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-outline-variant bg-surface-container-lowest px-page-padding">

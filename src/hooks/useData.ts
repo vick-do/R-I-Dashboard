@@ -14,6 +14,7 @@ export const keys = {
   compare: (metric: string, groupBy: string | null, year?: number) =>
     ['compare', metric, groupBy ?? 'none', year ?? 'all'] as const,
   funnel: (year?: number) => ['funnel', year ?? 'all'] as const,
+  byPeriod: (program: string, metric: string) => ['by-period', program, metric] as const,
   dataQuality: (year?: number) => ['data-quality', year ?? 'all'] as const,
   sheets: ['sheets'] as const,
   users: ['users'] as const,
@@ -109,6 +110,15 @@ export function useFunnel(year?: number) {
 }
 
 /** Where the recorded data disagrees with itself. */
+/** One metric split across whole years, for the trend column chart. */
+export function useMetricByYear(program: string | undefined, metric: string | undefined) {
+  return useQuery({
+    queryKey: keys.byPeriod(program ?? '', metric ?? ''),
+    queryFn: () => api.byYear({ program: program!, metric: metric! }),
+    enabled: Boolean(program && metric),
+  });
+}
+
 export function useDataQuality(year?: number) {
   return useQuery({
     queryKey: keys.dataQuality(year),

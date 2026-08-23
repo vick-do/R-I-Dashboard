@@ -7,6 +7,12 @@ export type DonutSlice = {
   value: number;
   /** Marks a figure the API summed from a breakdown rather than read directly. */
   derived?: boolean;
+  /**
+   * Fixes this slice's colour slot. Given across a set of small multiples, a
+   * category keeps one colour in every ring — colour follows the entity, never
+   * its rank inside one chart.
+   */
+  slot?: number;
 };
 
 /**
@@ -22,13 +28,21 @@ export function DonutChart({
   slices,
   unit = 'count',
   centerLabel,
+  compact = false,
 }: {
   slices: DonutSlice[];
   unit?: Unit;
   /** Wording under the total, e.g. "people trained". */
   centerLabel?: string;
+  /** Ring only, no legend — for a set of small multiples that share one. */
+  compact?: boolean;
 }) {
-  const sorted = [...slices].sort((a, b) => b.value - a.value);
+  // With explicit slots the arc order follows them, so the same category sits
+  // in the same place in every ring of a set.
+  const hasSlots = slices.some((s) => s.slot !== undefined);
+  const sorted = hasSlots
+    ? [...slices].sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0))
+    : [...slices].sort((a, b) => b.value - a.value);
 
   const shown =
     sorted.length > MAX_SLICES
@@ -53,7 +67,7 @@ export function DonutChart({
     const arc = {
       ...slice,
       share,
-      color: seriesColor(index),
+      color: seriesColor(slice.slot ?? index),
       dash,
       offset: -cursor,
     };
@@ -62,10 +76,16 @@ export function DonutChart({
   });
 
   return (
-    <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+    <div
+      className={
+        compact
+          ? 'flex flex-col items-center gap-2'
+          : 'flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8'
+      }
+    >
       <svg
         viewBox="0 0 200 200"
-        className="h-[180px] w-[180px] shrink-0"
+        className={compact ? 'h-[132px] w-[132px] shrink-0' : 'h-[180px] w-[180px] shrink-0'}
         role="img"
         aria-label={`${formatValue(total, unit)} total across ${shown.length} ${
           shown.length === 1 ? 'entry' : 'entries'
@@ -107,7 +127,9 @@ export function DonutChart({
       </svg>
 
       {/* The legend is the chart's relief channel: it carries identity, the
-          exact value, and the share, so nothing rests on arc length alone. */}
+          exact value, and the share, so nothing rests on arc length alone. A
+          compact ring leaves that to the set's shared legend and its own table. */}
+      {compact ? null : (
       <ul className="flex w-full min-w-0 flex-col gap-3">
         {arcs.map((arc) => (
           <li key={arc.name} className="flex items-baseline gap-2.5">
@@ -136,6 +158,7 @@ export function DonutChart({
           </li>
         ))}
       </ul>
+      )}
     </div>
   );
 }

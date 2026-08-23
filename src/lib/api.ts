@@ -218,7 +218,7 @@ export type MetricSummary = {
   total: number | null;
   basis: Basis;
   derivedFrom: string[] | null;
-  breakdowns: Array<{ dimension: string; rows: AggregateRow[] }>;
+  breakdowns: Array<{ dimension: string; dimensions: string[]; rows: AggregateRow[] }>;
   trend: { groupBy: string | null; rows: AggregateRow[] } | null;
 };
 
@@ -574,6 +574,12 @@ export const api = {
     request<{ metric: { key: string; label: string; unit: Unit }; groupBy: string[]; rows: AggregateRow[] }>(
       `/api/v1/facts/aggregate${qs(params)}`
     ),
+
+  byYear: (params: { program: string; metric: string }) =>
+    request<{
+      metric: { key: string; label: string; unit: Unit };
+      points: Array<{ year: number; value: number; basis: Basis }>;
+    }>(`/api/v1/insights/by-year${qs(params)}`),
 
   history: (params: { program: string; metric: string; periodType?: string; periodStart?: string; dimensions?: string }) =>
     request<{ versions: FactVersion[] }>(`/api/v1/facts/history${qs(params)}`),

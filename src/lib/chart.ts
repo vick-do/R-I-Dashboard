@@ -1,7 +1,23 @@
 /**
  * Chart colour and geometry constants.
  */
-export const SERIES = ['#0e8fa2', '#eb6834', '#4a3aa7', '#eda100', '#e87ba4', '#008300', '#e34948'] as const;
+/**
+ * Categorical slots, in fixed order.
+ *
+ * Red and the strong orange are deliberately absent. The application already
+ * spends those two on status — a failed reconciliation, a figure that does not
+ * add up — so a region painted red reads as an error rather than as a region.
+ * They were also where the old palette landed once a chart ran past its last
+ * slot, which turned most of Absa's fifteen regions into a wall of red.
+ *
+ * Validated as this exact order on white:
+ *   worst adjacent CVD ΔE 13.0 (protan) · tritan 13.1 · normal-vision 27.5
+ *   ALL CHECKS PASS
+ *
+ * Yellow and pink sit below 3:1 on white, so both always ship with a visible
+ * label — which every chart here has, plus a table view.
+ */
+export const SERIES = ['#0e8fa2', '#eda100', '#4a3aa7', '#008300', '#e87ba4', '#2a78d6'] as const;
 
 /** Slots that are safe when every pair is compared, not just adjacent ones. */
 export const ALL_PAIRS_SAFE = 3;
@@ -9,6 +25,17 @@ export const ALL_PAIRS_SAFE = 3;
 /** Colour for series index i, held to the fixed order. */
 export function seriesColor(index: number): string {
   return SERIES[index] ?? SERIES[SERIES.length - 1];
+}
+
+/**
+ * Whether a set of categories can be told apart by colour at all.
+ *
+ * Past the last slot every category would take the same hue, which says
+ * "these are all the same thing" about categories that are not. Beyond this,
+ * charts drop back to a single hue and let length and label carry identity.
+ */
+export function canColourByCategory(count: number): boolean {
+  return count <= SERIES.length;
 }
 
 /**

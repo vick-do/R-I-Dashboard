@@ -235,7 +235,7 @@ function NavItem({
       }
     >
       {icon ? <span className="shrink-0">{icon}</span> : null}
-      <span className="truncate">{label}</span>
+      <span className="truncate capitalize">{label}</span>
       {badge ? (
         <span className="ml-auto shrink-0 rounded-full bg-status-danger-container px-2 py-0.5 text-xs font-semibold text-status-on-danger-container">
           {badge}
