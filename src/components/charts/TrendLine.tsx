@@ -7,9 +7,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { Unit } from '../../lib/api';
 import { AXIS_TICK, CHART_INK, GRID_PROPS, MARK, seriesColor } from '../../lib/chart';
-import { formatCompact } from '../../lib/format';
+import { formatCompact, type Measure } from '../../lib/format';
 import { ChartTooltip } from './Tooltip';
 
 export type TrendPoint = { period: string } & Record<string, string | number>;
@@ -29,7 +28,7 @@ export function TrendLine({
    * so an entity keeps the same colour across every chart on a page.
    */
   seriesKeys: Array<{ key: string; label: string; color?: string }>;
-  unit?: Unit;
+  unit?: Measure;
   height?: number;
 }) {
   return (

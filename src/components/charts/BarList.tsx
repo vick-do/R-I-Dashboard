@@ -1,6 +1,5 @@
-import type { Unit } from '../../lib/api';
 import { CHART_INK, MUTED_MARK, seriesColor } from '../../lib/chart';
-import { formatValue } from '../../lib/format';
+import { formatValue, type Measure } from '../../lib/format';
 
 export type BarRow = {
   name: string;
@@ -11,6 +10,9 @@ export type BarRow = {
   derived?: boolean;
   /**
    * Colour slot for this category, from the dimension catalog's own order.
+   *
+   * `-1` renders the neutral: the tail of a list too long for the palette,
+   * still labelled and measurable but not competing for a hue.
    *
    * Given, the category keeps one colour everywhere it appears — Accra is the
    * same hue in the hub chart, the cohort comparison and the donut, so the
@@ -32,7 +34,7 @@ export function BarList({
   onSelect,
 }: {
   rows: BarRow[];
-  unit?: Unit;
+  unit?: Measure;
   scale?: 'max' | 'total';
   /** Name of one row to emphasise; the rest recede to grey. */
   highlight?: string;
@@ -77,7 +79,8 @@ export function BarList({
                 className="h-full rounded"
                 style={{
                   width: `${width}%`,
-                  backgroundColor: dimmed ? MUTED_MARK : seriesColor(row.slot ?? 0),
+                  backgroundColor:
+                    dimmed || row.slot === -1 ? MUTED_MARK : seriesColor(row.slot ?? 0),
                 }}
               />
             </div>

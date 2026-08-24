@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useDimensions, useMetricByYear, useProgramSummary } from '../hooks/useData';
 import { errorMessage, isApiError, type Dimension, type MetricSummary } from '../lib/api';
 import { formatValue, humanise, shortPeriod } from '../lib/format';
-import { canColourByCategory, seriesColor } from '../lib/chart';
+import { SERIES, canColourByCategory, seriesColor } from '../lib/chart';
 import { useAuth } from '../lib/auth';
 import { usePeriod } from '../lib/period';
 import { PageHeader } from '../components/layout/DashboardLayout';
@@ -56,7 +56,10 @@ export function ProgramPage() {
     if (selectedKey && metrics.some((m) => m.key === selectedKey)) return;
     const lead = metrics.find((m) => detailCount(m) > 0) ?? metrics[0];
     setSelectedKey(lead.key);
-    setCategory(lead.category ?? 'other');
+    // The filter earns its place on a programme reporting a dozen figures. On
+    // one reporting four it would hide most of the page behind a control nobody
+    // knows to open, so a short list opens showing all of it.
+    setCategory(metrics.length > MAX_UNFILTERED_FIGURES ? lead.category ?? 'other' : 'all');
   }, [pageKey, year, metrics.map((m) => m.key).join('|')]);
 
   const groups = useMemo(() => {
@@ -177,12 +180,6 @@ export function ProgramPage() {
                 />
               ))}
             </div>
-
-            {visible.length > 1 ? (
-              <p className="text-secondary-text text-on-surface-muted">
-                Select a figure to see how it breaks down.
-              </p>
-            ) : null}
           </section>
 
           {selected ? <MetricDetail metric={selected} labels={labels} year={year} pageKey={pageKey} /> : null}
@@ -239,7 +236,7 @@ function MetricCard({
           selected ? 'text-on-primary-container' : 'text-on-surface'
         }`}
       >
-        {metric.total === null ? '—' : formatValue(metric.total, metric.unit)}
+        {metric.total === null ? '—' : formatValue(metric.total, metric)}
       </span>
       <span className="text-xs leading-snug text-on-surface-muted">
         {derived ? (
@@ -277,7 +274,7 @@ function MetricDetail({
     return (
       <Card>
         <EmptyState
-          title={`${formatValue(metric.total, metric.unit)} ${metric.label.toLowerCase()}, with no breakdown behind it`}
+          title={`${formatValue(metric.total, metric)} ${metric.label.toLowerCase()}, with no breakdown behind it`}
           hint="Only an overall figure is recorded for this metric. Record it against a hub, gender or cohort and the split appears here."
         />
       </Card>
@@ -311,6 +308,18 @@ function MetricDetail({
  */
 const MAX_BARS = 10;
 
+/**
+ * Above this many figures the category filter opens narrowed rather than open.
+ *
+ * Set where the figure cards stop fitting two rows: EdTech Mondays reports
+ * twelve social measures and does need narrowing, while the EdTech Fellowship's
+ * eight are the whole point of its page and must not open hidden.
+ */
+const MAX_UNFILTERED_FIGURES = 8;
+
+/** Columns that still fit legibly inside one small multiple. */
+const MAX_COMPACT_COLUMNS = 6;
+
 function BreakdownPanel({
   metric,
   breakdown,
@@ -334,15 +343,29 @@ function BreakdownPanel({
   const distinctValues = new Set(rows.map((r) => r.dimensions[dimension])).size;
   const colourByCategory = canColourByCategory(distinctValues);
 
-  const data = rows
+  const ranked = rows
     .map((row) => ({
       name: labels.valueLabel(dimension, row.dimensions[dimension]),
       value: row.value,
-      // Colour follows the category, not its rank — but only while there are
-      // few enough categories for the palette to separate them.
-      slot: colourByCategory ? labels.valueSlot(dimension, row.dimensions[dimension]) : 0,
+      // Colour follows the category while the palette can separate them, so a
+      // hub is the same hue in every chart it appears in.
+      slot: colourByCategory ? labels.valueSlot(dimension, row.dimensions[dimension]) : -1,
     }))
     .sort((a, b) => b.value - a.value);
+
+  /**
+   * Too many categories for the palette: colour the leaders and fold the tail
+   * into one neutral.
+   *
+   * This is rank-based colouring, which is normally wrong — but it is safe here
+   * precisely because these categories appear in exactly one chart. Absa's
+   * fifteen regions and seventy-one districts are named nowhere else, so there
+   * is no cross-chart identity for a re-rank to break, and the alternative was
+   * every bar in one flat hue.
+   */
+  const data = colourByCategory
+    ? ranked
+    : ranked.map((row, index) => ({ ...row, slot: index < SERIES.length ? index : -1 }));
 
   const total = data.reduce((sum, r) => sum + r.value, 0);
   const dimensionLabel = labels.dimensionLabel(dimension);
@@ -365,7 +388,9 @@ function BreakdownPanel({
    *   • anything else → horizontal bars, which cope with long names and never
    *     make close values hard to compare.
    */
-  const form = labels.isOrdered(dimension) && data.length <= 12
+  const form = data.length === 1
+    ? 'single'
+    : labels.isOrdered(dimension) && data.length <= 12
     ? 'columns'
     : covers && metric.aggregation === 'sum' && data.length >= 3 && data.length <= 6 && !tooClose
       ? 'donut'
@@ -378,7 +403,7 @@ function BreakdownPanel({
   return (
     <Panel
       title={`${metric.label} by ${dimensionLabel.toLowerCase()}${qualifier ? ` — ${qualifier}` : ''}`}
-      subtitle={`${formatValue(total, metric.unit)} total${year ? ` in ${year}` : ''}`}
+      subtitle={`${formatValue(total, metric)} total${year ? ` in ${year}` : ''}`}
       action={form === 'share' ? <CompositionLegend legend={[...data].sort((x, y) => x.slot - y.slot).map((d) => d.name)} /> : undefined}
       table={{
         columns: [
@@ -388,63 +413,35 @@ function BreakdownPanel({
         ],
         rows: data.map((r) => ({
           name: r.name,
-          value: formatValue(r.value, metric.unit),
+          value: formatValue(r.value, metric),
           share: total ? `${((r.value / total) * 100).toFixed(1)}%` : '—',
         })),
       }}
     >
-      {form === 'donut' ? (
-        <DonutChart slices={data} unit={metric.unit} centerLabel={dimensionLabel.toLowerCase()} />
+      {form === 'single' ? (
+        // Every row shares one value — MEST Scale's enterprises are all Medium.
+        // A chart of a single bar compares nothing; the fact is the whole story.
+        <p className="text-body-text text-on-surface-variant">
+          All {formatValue(data[0].value, metric)} are{' '}
+          <span className="font-medium text-on-surface">{data[0].name}</span>.
+        </p>
+      ) : form === 'donut' ? (
+        <DonutChart slices={data} unit={metric} centerLabel={dimensionLabel.toLowerCase()} />
       ) : form === 'columns' ? (
         <ColumnChart
           columns={[...data].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))}
-          unit={metric.unit}
+          unit={metric}
         />
       ) : form === 'share' ? (
         <CompositionBar
           rows={[{ name: dimensionLabel, total, segments: data.map((d) => ({ label: d.name, value: d.value, share: total ? d.value / total : null })) }]}
           legend={[...data].sort((x, y) => x.slot - y.slot).map((d) => d.name)}
-          unit={metric.unit}
+          unit={metric}
         />
       ) : (
-        <BarList rows={data.slice(0, MAX_BARS)} unit={metric.unit} scale="max" />
+        <BarList rows={data.slice(0, MAX_BARS)} unit={metric} scale="max" />
       )}
-
-      {data.length > MAX_BARS ? (
-        <p className="mt-5 border-t border-outline-variant pt-4 text-secondary-text text-on-surface-variant">
-          Showing the top {MAX_BARS} of {data.length} — the rest are in the table view. Past about ten
-          categories a chart stops being readable, so the tail is listed rather than drawn.
-        </p>
-      ) : null}
-
-      <CoverageNote total={total} headline={metric.total} unit={metric.unit} what={dimensionLabel} />
     </Panel>
-  );
-}
-
-/**
- * A breakdown that does not add up to the figure above it is not an error — some
- * of the programme simply has no value recorded on that axis. Saying so is what
- * stops the chart reading as though it were the whole story.
- */
-function CoverageNote({
-  total,
-  headline,
-  unit,
-  what,
-}: {
-  total: number;
-  headline: number | null;
-  unit: MetricSummary['unit'];
-  what: string;
-}) {
-  if (headline === null || Math.abs(total - headline) < 0.005) return null;
-
-  return (
-    <p className="mt-5 border-t border-outline-variant pt-4 text-secondary-text text-on-surface-variant">
-      Covers {formatValue(total, unit)} of {formatValue(headline, unit)} — the rest has no{' '}
-      {what.toLowerCase()} recorded against it.
-    </p>
   );
 }
 
@@ -567,7 +564,7 @@ function CrossBreakdownPanel({
           ? `${metric.label} by ${groupLabel} — ${labels.valueLabel(segmentBy, selected)}`
           : `${metric.label} by ${groupLabel} and ${segmentLabel}`
       }
-      subtitle={`${formatValue(isFiltered ? filteredTotal : total, metric.unit)} total${year ? ` in ${year}` : ''}`}
+      subtitle={`${formatValue(isFiltered ? filteredTotal : total, metric)} total${year ? ` in ${year}` : ''}`}
       action={filter}
       table={{
         columns: [
@@ -580,12 +577,12 @@ function CrossBreakdownPanel({
           .map((r) => ({
             group: labels.valueLabel(groupBy, r.dimensions[groupBy]),
             segment: labels.valueLabel(segmentBy, r.dimensions[segmentBy]),
-            value: formatValue(r.value, metric.unit),
+            value: formatValue(r.value, metric),
           })),
       }}
     >
 {isFiltered ? (
-        <BarList rows={filteredRows} unit={metric.unit} scale="max" />
+        <BarList rows={filteredRows} unit={metric} scale="max" />
       ) : (
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => {
@@ -602,27 +599,33 @@ function CrossBreakdownPanel({
               <div className="mb-2 flex items-baseline justify-between gap-2">
                 <span className="truncate text-body-text font-medium text-on-surface">{row.name}</span>
                 <span className="tnum shrink-0 text-secondary-text text-on-surface-variant">
-                  {formatValue(row.total, metric.unit)}
+                  {formatValue(row.total, metric)}
                 </span>
               </div>
 
               {columns.length === 1 ? (
                 <div className="flex h-[110px] flex-col justify-end pb-6">
                   <p className="text-secondary-text text-on-surface-variant">
-                    {columns[0].name} only — {formatValue(columns[0].value, metric.unit)}
+                    {columns[0].name} only — {formatValue(columns[0].value, metric)}
                   </p>
                 </div>
+              ) : columns.length > MAX_COMPACT_COLUMNS ? (
+                // A small multiple is a third of a panel wide. Nine hubs of
+                // UNDP-YAI jobs crushed into that many columns leaves the tick
+                // labels overlapping each other and unreadable; turned on their
+                // side the names have room to be read.
+                <BarList
+                  rows={[...columns].sort((a, b) => b.value - a.value)}
+                  unit={metric}
+                  scale="max"
+                />
               ) : (
-                <ColumnChart compact height={110} unit={metric.unit} columns={columns} max={sharedMax} />
+                <ColumnChart compact height={110} unit={metric} columns={columns} max={sharedMax} />
               )}
             </div>
           );
         })}
       </div>
-      )}
-
-      {isFiltered ? null : (
-        <CoverageNote total={total} headline={metric.total} unit={metric.unit} what={`${groupLabel} and ${segmentLabel}`} />
       )}
     </Panel>
   );
@@ -693,21 +696,13 @@ function TrendPanel({ metric, labels }: { metric: MetricSummary; labels: LabelIn
           ...Object.fromEntries(
             allSeries.map((s) => [
               s.label,
-              point[s.label] === undefined ? '—' : formatValue(point[s.label] as number, metric.unit),
+              point[s.label] === undefined ? '—' : formatValue(point[s.label] as number, metric),
             ])
           ),
         })),
       }}
     >
-      <TrendLine data={data} seriesKeys={seriesKeys} unit={metric.unit} />
-
-      {allSeries.length > shown.length ? (
-        <p className="mt-4 border-t border-outline-variant pt-4 text-secondary-text text-on-surface-variant">
-          {allSeries.length - shown.length} further series are in the table view. Past seven, an extra hue is
-          indistinguishable from one already in use.
-        </p>
-      ) : null}
-    </Panel>
+      <TrendLine data={data} seriesKeys={seriesKeys} unit={metric} />    </Panel>
   );
 }
 
@@ -769,16 +764,16 @@ function YearPanel({ metric, pageKey }: { metric: MetricSummary; pageKey: string
   return (
     <Panel
       title={`${metric.label} by year`}
-      subtitle={`${formatValue(total, metric.unit)} across ${columns.length} years`}
+      subtitle={`${formatValue(total, metric)} across ${columns.length} years`}
       table={{
         columns: [
           { key: 'year', label: 'Year' },
           { key: 'value', label: metric.label, align: 'right' },
         ],
-        rows: columns.map((c) => ({ year: c.name, value: formatValue(c.value, metric.unit) })),
+        rows: columns.map((c) => ({ year: c.name, value: formatValue(c.value, metric) })),
       }}
     >
-      <ColumnChart columns={columns} unit={metric.unit} />
+      <ColumnChart columns={columns} unit={metric} />
     </Panel>
   );
 }

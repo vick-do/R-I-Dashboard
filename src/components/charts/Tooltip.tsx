@@ -1,5 +1,4 @@
-import type { Unit } from '../../lib/api';
-import { formatValue } from '../../lib/format';
+import { formatValue, type Measure } from '../../lib/format';
 
 type Entry = { name?: string; value?: number; color?: string; dataKey?: string | number };
 
@@ -16,7 +15,7 @@ export function ChartTooltip({
   active?: boolean;
   payload?: Entry[];
   label?: string | number;
-  unit?: Unit;
+  unit?: Measure;
   labelSuffix?: string;
 }) {
   if (!active || !payload?.length) return null;

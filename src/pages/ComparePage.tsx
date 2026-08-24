@@ -67,7 +67,7 @@ export function ComparePage() {
       ) : (
         <Panel
           title={compare.data!.metric.label}
-          subtitle={`${year ?? 'All time'} · ${formatValue(compare.data!.total, compare.data!.metric.unit)} across ${
+          subtitle={`${year ?? 'All time'} · ${formatValue(compare.data!.total, compare.data!.metric)} across ${
             compare.data!.rows.length
           } programme${compare.data!.rows.length === 1 ? '' : 's'}`}
           table={{
@@ -79,7 +79,7 @@ export function ComparePage() {
             ],
             rows: compare.data!.rows.map((row) => ({
               name: row.name,
-              value: formatValue(row.value, compare.data!.metric.unit),
+              value: formatValue(row.value, compare.data!.metric),
               share: row.share != null ? `${(row.share * 100).toFixed(1)}%` : '—',
               basis:
                 row.basis === 'derived_from_breakdown'
@@ -90,7 +90,7 @@ export function ComparePage() {
         >
           <BarList
             scale="total"
-            unit={compare.data!.metric.unit}
+            unit={compare.data!.metric}
             rows={compare.data!.rows.map((row) => ({
               name: row.name,
               value: row.value,

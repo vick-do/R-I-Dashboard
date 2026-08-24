@@ -1,6 +1,5 @@
 import { seriesColor } from '../../lib/chart';
-import { formatValue } from '../../lib/format';
-import type { Unit } from '../../lib/api';
+import { formatValue, type Measure } from '../../lib/format';
 
 export type CompositionRow = {
   name: string;
@@ -19,7 +18,7 @@ export function CompositionBar({
   rows: CompositionRow[];
   /** Shared segment order. Index decides the colour slot. */
   legend: string[];
-  unit?: Unit;
+  unit?: Measure;
 }) {
   const slotOf = (label: string) => {
     const index = legend.indexOf(label);

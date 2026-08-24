@@ -1,6 +1,5 @@
-import type { Unit } from '../../lib/api';
 import { CHART_INK, seriesColor } from '../../lib/chart';
-import { formatCompact, formatValue } from '../../lib/format';
+import { formatCompact, formatValue, type Measure } from '../../lib/format';
 
 export type Column = {
   name: string;
@@ -29,7 +28,7 @@ export function ColumnChart({
   max: imposedMax,
 }: {
   columns: Column[];
-  unit?: Unit;
+  unit?: Measure;
   height?: number;
   /** Smaller type and no value labels — for a set of small multiples. */
   compact?: boolean;

@@ -22,7 +22,7 @@ export function FunnelStages({ stages }: { stages: FunnelStage[] }) {
               </span>
               <span className="tnum shrink-0 text-body-text">
                 <span className={missing ? 'text-on-surface-muted' : 'font-medium text-on-surface'}>
-                  {missing ? '—' : formatValue(stage.value, stage.unit)}
+                  {missing ? '—' : formatValue(stage.value, stage)}
                 </span>
                 {stage.conversion !== null ? (
                   <span className="ml-2 text-on-surface-muted">{(stage.conversion * 100).toFixed(1)}%</span>

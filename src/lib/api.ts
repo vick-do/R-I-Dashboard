@@ -196,6 +196,7 @@ export type OrgTotal = {
   metricLabel: string;
   description: string | null;
   unit: Unit;
+  currency?: string | null;
   value: number | null;
   programCount: number;
   basis: Basis;
@@ -213,6 +214,8 @@ export type MetricSummary = {
   key: string;
   label: string;
   unit: Unit;
+  /** ISO code for a `currency` metric — the sheets report in both USD and GHS. */
+  currency?: string | null;
   aggregation: 'sum' | 'avg' | 'latest';
   category: string;
   total: number | null;

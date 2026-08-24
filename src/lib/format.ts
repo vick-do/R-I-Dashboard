@@ -3,14 +3,33 @@ import type { Unit } from './api';
 /**
  * Number formatting.
  */
-export function formatValue(value: number | null | undefined, unit: Unit = 'count'): string {
+/**
+ * How to render a metric's numbers: its unit, and for money its currency.
+ *
+ * Everything that formats a figure takes this rather than a bare `Unit`, so a
+ * currency travels with its number all the way to the axis tick. A bare `Unit`
+ * is still accepted, because most metrics are counts and have nothing to carry.
+ */
+export type Measure = Unit | { unit: Unit; currency?: string | null };
+
+const unitOf = (m: Measure): Unit => (typeof m === 'string' ? m : m.unit);
+const currencyOf = (m: Measure): string =>
+  (typeof m === 'string' ? null : m.currency) || 'USD';
+
+export function formatValue(value: number | null | undefined, measure: Measure = 'count'): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '—';
+
+  const unit = unitOf(measure);
+  const currency = currencyOf(measure);
 
   switch (unit) {
     case 'currency':
+      // The currency comes from the metric, not from a house default: the
+      // EdTech Fellowship reports cedis and UNDP-YAI dollars, and the same
+      // number under the wrong symbol is a different figure.
       return new Intl.NumberFormat('en-GH', {
         style: 'currency',
-        currency: 'USD',
+        currency: currency || 'USD',
         maximumFractionDigits: value >= 1000 ? 0 : 2,
       }).format(value);
     case 'percent':
@@ -18,12 +37,16 @@ export function formatValue(value: number | null | undefined, unit: Unit = 'coun
     case 'ratio':
       return `${new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 }).format(value)}×`;
     default:
-      return new Intl.NumberFormat('en-GB').format(value);
+      // Counts are whole things. Some arrive fractional because the source
+      // apportioned them — the EdTech Fellowship reports 823,776.48 learners —
+      // and showing the decimal implies a precision the estimate does not have.
+      return new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(value);
   }
 }
 
 /** Abbreviated form for axis ticks, where space is tight. 2,800,672 → 2.8M */
-export function formatCompact(value: number, unit: Unit = 'count'): string {
+export function formatCompact(value: number, measure: Measure = 'count'): string {
+  const unit = unitOf(measure);
   if (unit === 'percent') return `${value}%`;
   const abs = Math.abs(value);
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1)}M`;

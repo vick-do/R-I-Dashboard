@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   useCompare,
   useCompareGrouped,
-  useDataQuality,
   useFunnel,
   useScorecard,
   useDimensions,
@@ -11,9 +10,7 @@ import { errorMessage } from '../lib/api';
 import { formatValue, humanise } from '../lib/format';
 import { useAuth } from '../lib/auth';
 import { usePeriod } from '../lib/period';
-import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/layout/DashboardLayout';
-import { WarningIcon } from '../components/ui/Icons';
 import { StatTile } from '../components/ui/StatTile';
 import { Card, EmptyState, ErrorState, Skeleton, Spinner } from '../components/ui/Card';
 import { Panel } from '../components/ui/Panel';
@@ -56,8 +53,6 @@ export function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <DiscrepancyBanner year={year} />
-
       <PageHeader
         title="Impact Overview"
         subtitle={
@@ -142,7 +137,7 @@ function HeadlineTile({
     <StatTile
       label={total.label}
       value={total.value}
-      unit={total.unit}
+      unit={total}
       basis={total.basis}
       delta={total.delta}
       series={total.series}
@@ -192,8 +187,6 @@ function TrainedByProgramme({ year, className }: { year: number | undefined; cla
     );
   }
 
-  const derivedCount = rows.filter((r) => r.basis === 'derived_from_breakdown').length;
-
   return (
     <Panel
       title="People trained by programme"
@@ -222,14 +215,6 @@ function TrainedByProgramme({ year, className }: { year: number | undefined; cla
           derived: row.basis === 'derived_from_breakdown',
         }))}
       />
-
-      {derivedCount > 0 ? (
-        <p className="mt-5 border-t border-outline-variant pt-4 text-secondary-text text-on-surface-variant">
-          {derivedCount === 1 ? 'One programme has' : `${derivedCount} programmes have`} no recorded overall
-          total, so {derivedCount === 1 ? 'its' : 'their'} figure is summed from the finest breakdown recorded —
-          marked <span className="font-medium">summed</span> above. Nothing is dropped and nothing is counted twice.
-        </p>
-      ) : null}
     </Panel>
   );
 }
@@ -255,8 +240,6 @@ function TrainingFunnel({ year }: { year: number | undefined }) {
   const stages = funnel.data ?? [];
   if (stages.length === 0) return null;
 
-  const missing = stages.filter((s) => s.value === null);
-
   return (
     <Panel
       title="Training funnel"
@@ -268,21 +251,14 @@ function TrainingFunnel({ year }: { year: number | undefined }) {
         ],
         rows: stages.map((s) => ({
           stage: s.label,
-          value: s.value === null ? 'Not recorded' : formatValue(s.value, s.unit),
+          value: s.value === null ? 'Not recorded' : formatValue(s.value, s),
           conversion: s.conversion === null ? '—' : `${(s.conversion * 100).toFixed(1)}%`,
         })),
       }}
     >
       <div className="pt-2">
         <FunnelStages stages={stages} />
-      </div>
-
-      <p className="mt-5 border-t border-outline-variant pt-4 text-secondary-text text-on-surface-variant">
-        {missing.length > 0
-          ? `Recording ${missing.map((s) => s.label.toLowerCase()).join(' and ')} completes this funnel. Both are already in the metric catalog, so it is data entry rather than a change to the system.`
-          : 'Each rate is measured against the stage immediately before it, never against enrolment.'}
-      </p>
-    </Panel>
+      </div>    </Panel>
   );
 }
 
@@ -424,56 +400,5 @@ function LearnersByGender({ year }: { year: number | undefined }) {
     >
       <CompositionBar legend={present} rows={rows} />
     </Panel>
-  );
-}
-
-/**
- * Discrepancies found in the recorded data, counted live rather than listed by
- * hand. Silent when everything agrees.
- */
-function DiscrepancyBanner({ year }: { year: number | undefined }) {
-  const quality = useDataQuality(year);
-  const issues = quality.data?.issues ?? [];
-  if (issues.length === 0) return null;
-
-  const worst = issues[0];
-  const isError = worst.severity === 'error';
-
-  return (
-    <div
-      className={`flex flex-wrap items-start gap-3 rounded-lg border p-4 ${
-        isError
-          ? 'border-status-danger/30 bg-status-danger-container'
-          : 'border-status-warning/40 bg-status-warning-container'
-      }`}
-    >
-      <WarningIcon
-        className={`mt-0.5 h-5 w-5 shrink-0 ${isError ? 'text-status-danger' : 'text-status-serious'}`}
-      />
-
-      <div className="min-w-0 flex-1">
-        <h2 className={`text-card-title ${isError ? 'text-status-on-danger-container' : 'text-status-on-warning-container'}`}>
-          {issues.length === 1
-            ? '1 figure disagrees with itself'
-            : `${issues.length} figures disagree with themselves`}
-        </h2>
-        <p className="mt-1 text-body-text text-on-surface-variant">
-          {worst.title}
-          {worst.readings
-            ? ` — ${worst.readings.map((r) => formatValue(r.value, worst.unit ?? 'count')).join(' vs ')}.`
-            : worst.detail
-              ? ` ${worst.detail}`
-              : ''}
-          {issues.length > 1 ? ` And ${issues.length - 1} more.` : ''}
-        </p>
-      </div>
-
-      <Link
-        to="/quality"
-        className="no-print shrink-0 rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-secondary-text font-medium text-on-surface transition hover:bg-surface-variant"
-      >
-        Review
-      </Link>
-    </div>
   );
 }

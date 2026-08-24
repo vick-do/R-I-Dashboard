@@ -1,5 +1,5 @@
-import type { Basis, Delta, Unit } from '../../lib/api';
-import { formatValue } from '../../lib/format';
+import type { Basis, Delta } from '../../lib/api';
+import { formatValue, type Measure } from '../../lib/format';
 import { Sparkline } from './Sparkline';
 import { WarningIcon } from './Icons';
 
@@ -20,7 +20,7 @@ export function StatTile({
 }: {
   label: string;
   value: number | null;
-  unit?: Unit;
+  unit?: Measure;
   detail?: string;
   basis?: Basis;
   delta?: Delta | null;

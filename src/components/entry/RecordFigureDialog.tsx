@@ -443,7 +443,7 @@ function Summary({
       {value !== '' ? (
         <>
           {' '}
-          = <strong className="font-semibold">{formatValue(Number(value), metric.unit)}</strong>
+          = <strong className="font-semibold">{formatValue(Number(value), metric)}</strong>
         </>
       ) : (
         '.'

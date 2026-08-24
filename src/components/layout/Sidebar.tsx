@@ -3,15 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import type { ProgramNode } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { useDataQuality, useSubmissions } from '../../hooks/useData';
-import {
-  AdminIcon,
-  ApprovalsIcon,
-  ChevronDownIcon,
-  CompareIcon,
-  DashboardIcon,
-  ImportIcon,
-  QualityIcon,
-} from '../ui/Icons';
+import { AdminIcon, ChevronDownIcon, DashboardIcon } from '../ui/Icons';
 
 /**
  * Navigation, built from the programme tree the API returns rather than from a hard-coded list
@@ -39,10 +31,6 @@ export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onN
 
   const roots = programs.filter((p) => p.pageKey !== 'overview');
 
-  // Counted from the data rather than hard-coded, so the badge cannot drift
-  // from what the Data quality page actually shows.
-  const { data: quality } = useDataQuality(undefined);
-  const issueCount = quality?.counts.total ?? 0;
 
   const { data: queue } = useSubmissions('pending');
   const waiting = queue?.counts.total ?? 0;
@@ -51,7 +39,6 @@ export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onN
     <nav className="flex h-full flex-col gap-1 px-3 py-4" aria-label="Main">
       <SectionLabel>Reporting</SectionLabel>
       <NavItem to="/" label="Overview" depth={0} onNavigate={onNavigate} end icon={<DashboardIcon className="h-5 w-5" />} />
-      <NavItem to="/compare" label="Compare programmes" depth={0} onNavigate={onNavigate} icon={<CompareIcon className="h-5 w-5" />} />
 
       <SectionLabel
         className="pt-5"
@@ -74,39 +61,8 @@ export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onN
         : null}
 
       <SectionLabel className="pt-5">Operations</SectionLabel>
-      <NavItem
-        to="/approvals"
-        label="Approvals"
-        depth={0}
-        onNavigate={onNavigate}
-        icon={<ApprovalsIcon className="h-5 w-5" />}
-        badge={waiting || undefined}
-      />
-      {can('editor') ? (
-        <NavItem
-          to="/imports"
-          label="Connected sheets"
-          depth={0}
-          onNavigate={onNavigate}
-          icon={<ImportIcon className="h-5 w-5" />}
-        />
-      ) : null}
-      <NavItem
-        to="/quality"
-        label="Data quality"
-        depth={0}
-        onNavigate={onNavigate}
-        icon={<QualityIcon className="h-5 w-5" />}
-        badge={issueCount || undefined}
-      />
       {can('admin') ? (
-        <NavItem
-          to="/admin"
-          label="Administration"
-          depth={0}
-          onNavigate={onNavigate}
-          icon={<AdminIcon className="h-5 w-5" />}
-        />
+        <NavItem to="/admin" label="Administration" depth={0} onNavigate={onNavigate} icon={<AdminIcon className="h-5 w-5" />} />
       ) : null}
     </nav>
   );

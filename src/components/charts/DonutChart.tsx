@@ -1,6 +1,5 @@
-import type { Unit } from '../../lib/api';
 import { seriesColor } from '../../lib/chart';
-import { formatValue } from '../../lib/format';
+import { formatValue, type Measure } from '../../lib/format';
 
 export type DonutSlice = {
   name: string;
@@ -31,7 +30,7 @@ export function DonutChart({
   compact = false,
 }: {
   slices: DonutSlice[];
-  unit?: Unit;
+  unit?: Measure;
   /** Wording under the total, e.g. "people trained". */
   centerLabel?: string;
   /** Ring only, no legend — for a set of small multiples that share one. */

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  useAudit,
   useCreateUser,
   useMetrics,
   usePrograms,
@@ -11,15 +10,13 @@ import {
   useDeleteUser,
   flattenPrograms,
 } from '../hooks/useData';
-import { errorMessage, type AuditEntry, type Invite, type ProgramNode, type Role, type User } from '../lib/api';
+import { errorMessage, type Invite, type ProgramNode, type Role, type User } from '../lib/api';
 import { formatDateTime } from '../lib/format';
 import { useAuth } from '../lib/auth';
 import { PageHeader } from '../components/layout/DashboardLayout';
 import { Card, EmptyState, ErrorState, Skeleton } from '../components/ui/Card';
-import { Panel } from '../components/ui/Panel';
 import { Button } from '../components/ui/Button';
 import { Field, inputClass, selectClass } from '../components/ui/Field';
-import { FilterSelect } from '../components/ui/FilterSelect';
 import { CloseIcon } from '../components/ui/Icons';
 
 const ROLES: Array<{ value: Role; label: string; description: string }> = [
@@ -29,46 +26,11 @@ const ROLES: Array<{ value: Role; label: string; description: string }> = [
   { value: 'admin', label: 'Admin', description: 'Everything, plus users, roles and the audit log.' },
 ];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  people: 'People',
-  enterprise: 'Enterprise',
-  investment: 'Investment',
-  social: 'Reach & engagement',
-  other: 'Other',
-};
-
-const TABS = ['Users', 'Metrics', 'Audit log'] as const;
-type Tab = (typeof TABS)[number];
-
 export function AdminPage() {
-  const [tab, setTab] = useState<Tab>('Users');
-
   return (
     <div className="space-y-6">
       <PageHeader title="Administration" subtitle="Users, roles, and what each person may change" />
-
-      <div className="flex gap-1 border-b border-outline-variant" role="tablist">
-        {TABS.map((name) => (
-          <button
-            key={name}
-            type="button"
-            role="tab"
-            aria-selected={tab === name}
-            onClick={() => setTab(name)}
-            className={`-mb-px border-b-2 px-4 py-2.5 text-body-text font-medium transition ${
-              tab === name
-                ? 'border-primary text-on-surface'
-                : 'border-transparent text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'Users' ? <UsersTab /> : null}
-      {tab === 'Metrics' ? <MetricsTab /> : null}
-      {tab === 'Audit log' ? <AuditTab /> : null}
+      <UsersTab />
     </div>
   );
 }
@@ -493,156 +455,6 @@ function InviteHandoff({ invite, name, onClose }: { invite: Invite; name: string
           Done
         </Button>
       </div>
-    </div>
-  );
-}
-
-/* ----------------------------------------------------------------- metrics */
-
-function MetricsTab() {
-  const metrics = useMetrics();
-  const [category, setCategory] = useState('all');
-
-  if (metrics.isLoading) return <Skeleton className="h-64" />;
-
-  const all = metrics.data ?? [];
-  const categories = [...new Set(all.map((m) => m.category))].sort();
-  const rows = category === 'all' ? all : all.filter((m) => m.category === category);
-
-  return (
-    <Panel
-      title="Metric catalog"
-      subtitle={`${rows.length} of ${all.length} metrics · adding one here makes it enterable and importable without a deploy`}
-      action={
-        <FilterSelect
-          id="metric-catalog-category"
-          label="Category"
-          value={category}
-          onChange={setCategory}
-          options={[
-            { value: 'all', label: 'All categories', count: all.length },
-            ...categories.map((c) => ({
-              value: c,
-              label: CATEGORY_LABELS[c] ?? c,
-              count: all.filter((m) => m.category === c).length,
-            })),
-          ]}
-        />
-      }
-      table={{
-        columns: [
-          { key: 'label', label: 'Metric' },
-          { key: 'key', label: 'Key' },
-          { key: 'unit', label: 'Unit' },
-          { key: 'category', label: 'Category' },
-          { key: 'dimensions', label: 'Breakdowns' },
-        ],
-        rows: rows.map((m) => ({
-          label: m.label,
-          key: m.key,
-          unit: m.unit,
-          category: m.category,
-          dimensions: m.allowedDimensions.join(', ') || '—',
-        })),
-      }}
-    >
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-body-text">
-          <thead>
-            <tr>
-              {['Metric', 'Unit', 'Aggregation', 'Headline', 'Breakdowns allowed'].map((h) => (
-                <th key={h} className="border-b border-outline-variant pb-2 text-left text-label-caps uppercase text-on-surface-muted">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((m) => (
-              <tr key={m.key}>
-                <td className="border-b border-outline-variant py-2.5 pr-4">
-                  <div className="font-medium text-on-surface">{m.label}</div>
-                  <div className="text-secondary-text text-on-surface-muted">{m.key}</div>
-                </td>
-                <td className="border-b border-outline-variant py-2.5 pr-4 text-on-surface-variant">{m.unit}</td>
-                <td className="border-b border-outline-variant py-2.5 pr-4 text-on-surface-variant">{m.aggregation}</td>
-                <td className="border-b border-outline-variant py-2.5 pr-4 text-on-surface-variant">
-                  {m.headlineOrder ? `#${m.headlineOrder}` : '—'}
-                </td>
-                <td className="border-b border-outline-variant py-2.5 text-secondary-text text-on-surface-muted">
-                  {m.allowedDimensions.join(', ') || '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Panel>
-  );
-}
-
-/* --------------------------------------------------------------- audit log */
-
-function AuditTab() {
-  const [action, setAction] = useState('');
-  const audit = useAudit(action || undefined);
-
-  if (audit.isLoading) return <Skeleton className="h-64" />;
-  if (audit.isError) {
-    return (
-      <Card>
-        <ErrorState message={errorMessage(audit.error)} onRetry={() => void audit.refetch()} />
-      </Card>
-    );
-  }
-
-  const { entries, actions } = audit.data!;
-
-  return (
-    <>
-      <FilterSelect
-        id="audit-action"
-        label="Action"
-        value={action}
-        onChange={setAction}
-        options={[{ value: '', label: 'Everything' }, ...actions.map((a) => ({ value: a, label: a }))]}
-      />
-
-      {entries.length === 0 ? (
-        <Card className="mt-4">
-          <EmptyState title="Nothing recorded yet" hint="Every change to data, users or the catalog appears here." />
-        </Card>
-      ) : (
-        <Card className="mt-4 divide-y divide-outline-variant">
-          {entries.map((entry) => (
-            <AuditRow key={entry._id} entry={entry} />
-          ))}
-        </Card>
-      )}
-    </>
-  );
-}
-
-function AuditRow({ entry }: { entry: AuditEntry }) {
-  const destructive = entry.action.includes('delete') || entry.action.includes('rollback');
-
-  return (
-    <div className="flex flex-wrap items-start gap-3 px-card-padding py-3.5">
-      <span
-        className={`mt-1 h-2 w-2 shrink-0 rounded-full ${destructive ? 'bg-status-danger' : 'bg-primary'}`}
-        aria-hidden="true"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="text-body-text text-on-surface">
-          {entry.summary ?? entry.action}
-        </p>
-        <p className="mt-0.5 text-secondary-text text-on-surface-muted">
-          {entry.actor ? `${entry.actor.firstName} ${entry.actor.lastName}` : 'System'} ·{' '}
-          <span className="font-mono text-xs">{entry.action}</span>
-          {entry.ip ? ` · ${entry.ip}` : ''}
-        </p>
-      </div>
-      <span className="shrink-0 text-secondary-text text-on-surface-muted">{formatDateTime(entry.createdAt)}</span>
     </div>
   );
 }
