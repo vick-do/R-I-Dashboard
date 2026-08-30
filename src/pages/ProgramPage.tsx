@@ -17,6 +17,8 @@ import { DonutChart } from '../components/charts/DonutChart';
 import { CompositionBar, CompositionLegend } from '../components/charts/CompositionBar';
 import { TrendLine } from '../components/charts/TrendLine';
 import { RecordFigureDialog } from '../components/entry/RecordFigureDialog';
+import { RecordGrowCohortDialog } from '../components/entry/RecordGrowCohortDialog';
+import { LiveBadge } from '../components/ui/LiveBadge';
 
 const CATEGORY_LABELS: Record<string, string> = {
   people: 'People',
@@ -56,10 +58,13 @@ export function ProgramPage() {
     if (selectedKey && metrics.some((m) => m.key === selectedKey)) return;
     const lead = metrics.find((m) => detailCount(m) > 0) ?? metrics[0];
     setSelectedKey(lead.key);
-    // The filter earns its place on a programme reporting a dozen figures. On
-    // one reporting four it would hide most of the page behind a control nobody
-    // knows to open, so a short list opens showing all of it.
-    setCategory(metrics.length > MAX_UNFILTERED_FIGURES ? lead.category ?? 'other' : 'all');
+    // Every page opens showing everything it reports, and the category filter
+    // is there to narrow it. Opening narrowed hid the figures that were the
+    // point of the page: Venture Support showed two of its ten, without the 620
+    // enterprises or the 2,797 jobs, and no heuristic for guessing which group
+    // matters survived contact with the tree — by count MEST X leads on social
+    // media, which is not what MEST X is about.
+    setCategory('all');
   }, [pageKey, year, metrics.map((m) => m.key).join('|')]);
 
   const groups = useMemo(() => {
@@ -105,7 +110,7 @@ export function ProgramPage() {
     );
   }
 
-  const { program, rolledUp } = summary.data!;
+  const { program, rolledUp, live } = summary.data!;
   const selected = metrics.find((m) => m.key === selectedKey) ?? null;
   const canEdit = can('editor');
 
@@ -120,11 +125,20 @@ export function ProgramPage() {
             : 'Recorded impact figures for this programme')
         }
         actions={
-          canEdit && !rolledUp ? (
-            <Button variant="primary" onClick={() => setRecording(true)}>
-              Record a figure
-            </Button>
-          ) : null
+          <>
+            <LiveBadge live={live} />
+            {/*
+              Hidden where the connected sheet is the source of truth: Web3,
+              Pre-Mest, Hospitality and Doulogic are all recounted from their
+              sheets on every sync, so a hand-typed figure there would be
+              overwritten on the next one.
+            */}
+            {canEdit && !rolledUp && program.allowsManualEntry ? (
+              <Button variant="primary" onClick={() => setRecording(true)}>
+                Record a figure
+              </Button>
+            ) : null}
+          </>
         }
       />
 
@@ -186,12 +200,25 @@ export function ProgramPage() {
         </>
       )}
 
-      <RecordFigureDialog
-        open={recording}
-        onClose={() => setRecording(false)}
-        initialProgram={program.pageKey}
-        initialMetric={selectedKey ?? undefined}
-      />
+      {/*
+        Grow gets a form built around what it actually records — a cohort at a
+        hub, with three counts against it — because it is entered that way every
+        time. Every other programme uses the general three-step dialog.
+      */}
+      {pageKey === GROW_PAGE_KEY ? (
+        <RecordGrowCohortDialog
+          open={recording}
+          onClose={() => setRecording(false)}
+          programKey={program.pageKey}
+        />
+      ) : (
+        <RecordFigureDialog
+          open={recording}
+          onClose={() => setRecording(false)}
+          initialProgram={program.pageKey}
+          initialMetric={selectedKey ?? undefined}
+        />
+      )}
     </div>
   );
 }
@@ -214,6 +241,10 @@ function MetricCard({
   onSelect: () => void;
 }) {
   const derived = metric.basis === 'derived_from_breakdown';
+  // On a roll-up the figure is several programmes added together, and saying so
+  // is the difference between "Venture Support supported 620 businesses" and a
+  // reader taking 620 for one programme's number.
+  const rolledUp = metric.programCount > 1;
 
   return (
     <button
@@ -239,9 +270,25 @@ function MetricCard({
         {metric.total === null ? '—' : formatValue(metric.total, metric)}
       </span>
       <span className="text-xs leading-snug text-on-surface-muted">
-        {derived ? (
-          <span title={`Summed across ${metric.derivedFrom?.map((d) => labels.dimensionLabel(d).toLowerCase()).join(' × ')}`}>
-            summed
+        {rolledUp ? (
+          <span
+            title={
+              metric.basis === 'partly_derived'
+                ? `One figure from each of ${metric.programCount} programmes, added. Some of them state no overall total, so theirs is summed from the finest breakdown they do record.`
+                : `One figure from each of ${metric.programCount} programmes, added.`
+            }
+          >
+            {metric.programCount} programmes
+          </span>
+        ) : derived ? (
+          // A rate is averaged across its breakdown, not added up. Calling a
+          // satisfaction figure "summed" says the sheet reported 278%.
+          <span
+            title={`${metric.aggregation === 'avg' ? 'Averaged' : 'Summed'} across ${metric.derivedFrom
+              ?.map((d) => labels.dimensionLabel(d).toLowerCase())
+              .join(' × ')}`}
+          >
+            {metric.aggregation === 'avg' ? 'averaged' : 'summed'}
           </span>
         ) : hasDetail ? (
           selected ? 'Showing' : 'View breakdown'
@@ -308,14 +355,8 @@ function MetricDetail({
  */
 const MAX_BARS = 10;
 
-/**
- * Above this many figures the category filter opens narrowed rather than open.
- *
- * Set where the figure cards stop fitting two rows: EdTech Mondays reports
- * twelve social measures and does need narrowing, while the EdTech Fellowship's
- * eight are the whole point of its page and must not open hidden.
- */
-const MAX_UNFILTERED_FIGURES = 8;
+/** The one programme with a purpose-built entry form. */
+const GROW_PAGE_KEY = 'digital-skills-grow';
 
 /** Columns that still fit legibly inside one small multiple. */
 const MAX_COMPACT_COLUMNS = 6;
@@ -367,9 +408,16 @@ function BreakdownPanel({
     ? ranked
     : ranked.map((row, index) => ({ ...row, slot: index < SERIES.length ? index : -1 }));
 
-  const total = data.reduce((sum, r) => sum + r.value, 0);
+  /**
+   * An average is not a sum. Three disciplines at roughly 80% confidence make
+   * "80.8% average", not "242.3% total" — and they are not slices of a whole,
+   * so no part-to-whole form applies to them either.
+   */
+  const isAverage = metric.aggregation === 'avg';
+  const summed = data.reduce((sum, r) => sum + r.value, 0);
+  const total = isAverage && data.length ? summed / data.length : summed;
   const dimensionLabel = labels.dimensionLabel(dimension);
-  const covers = metric.total !== null && Math.abs(total - metric.total) < 0.005;
+  const covers = !isAverage && metric.total !== null && Math.abs(total - metric.total) < 0.005;
 
   // Two values within a few percent of each other cannot be compared as arcs,
   // and a ring is only honest when its slices genuinely make up the whole.
@@ -403,7 +451,7 @@ function BreakdownPanel({
   return (
     <Panel
       title={`${metric.label} by ${dimensionLabel.toLowerCase()}${qualifier ? ` — ${qualifier}` : ''}`}
-      subtitle={`${formatValue(total, metric)} total${year ? ` in ${year}` : ''}`}
+      subtitle={`${formatValue(total, metric)} ${isAverage ? 'average' : 'total'}${year ? ` in ${year}` : ''}`}
       action={form === 'share' ? <CompositionLegend legend={[...data].sort((x, y) => x.slot - y.slot).map((d) => d.name)} /> : undefined}
       table={{
         columns: [

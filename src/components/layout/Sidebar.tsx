@@ -60,9 +60,13 @@ export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onN
           ))
         : null}
 
-      <SectionLabel className="pt-5">Operations</SectionLabel>
+      {/* Nothing sits under Operations for a public reader, and a heading with
+          nothing beneath it reads as something failing to load. */}
       {can('admin') ? (
-        <NavItem to="/admin" label="Administration" depth={0} onNavigate={onNavigate} icon={<AdminIcon className="h-5 w-5" />} />
+        <>
+          <SectionLabel className="pt-5">Operations</SectionLabel>
+          <NavItem to="/admin" label="Administration" depth={0} onNavigate={onNavigate} icon={<AdminIcon className="h-5 w-5" />} />
+        </>
       ) : null}
     </nav>
   );
@@ -125,13 +129,20 @@ function TreeNode({
   return (
     <div>
       <div className="flex items-stretch gap-0.5">
-        <NavItem to={`/p/${node.pageKey}`} label={node.name} depth={depth} onNavigate={onNavigate} className="min-w-0 flex-1" />
+        <NavItem
+          to={`/p/${node.pageKey}`}
+          // The nav may call a page something other than its title.
+          label={node.navLabel ?? node.name}
+          depth={depth}
+          onNavigate={onNavigate}
+          className="min-w-0 flex-1"
+        />
         {hasChildren ? (
           <button
             type="button"
             onClick={() => onToggle(node.pageKey)}
             aria-expanded={isOpen}
-            aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${node.name}`}
+            aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${node.navLabel ?? node.name}`}
             className="shrink-0 rounded-md px-2 text-on-surface-muted transition hover:bg-surface-variant hover:text-on-surface"
           >
             <ChevronDownIcon className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />

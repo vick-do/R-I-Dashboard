@@ -180,7 +180,11 @@ export type ProgramNode = {
   category: string;
   metricKeys: string[];
   description: string | null;
+  /** What the navigation calls this page, where that differs from its title. */
+  navLabel: string | null;
   isReportable: boolean;
+  /** False where the connected sheet is the only place a figure may come from. */
+  allowsManualEntry: boolean;
   children: ProgramNode[];
 };
 
@@ -221,6 +225,8 @@ export type MetricSummary = {
   total: number | null;
   basis: Basis;
   derivedFrom: string[] | null;
+  /** How many programmes stand behind the figure — more than one on a roll-up. */
+  programCount: number;
   breakdowns: Array<{ dimension: string; dimensions: string[]; rows: AggregateRow[] }>;
   trend: { groupBy: string | null; rows: AggregateRow[] } | null;
 };
@@ -232,10 +238,22 @@ export type ProgramSummary = {
     name: string;
     description: string | null;
     isReportable: boolean;
+    allowsManualEntry: boolean;
   };
   rolledUp: boolean;
   availableYears: number[];
   metrics: MetricSummary[];
+  /** Present only where a connected sheet is re-read as the page is opened. */
+  live: LiveStatus | null;
+};
+
+export type LiveStatus = {
+  syncedAt: string | null;
+  status: 'never_run' | 'synced' | 'needs_review' | 'failed' | string;
+  everyMinutes: number;
+  sources: string[];
+  /** The refresh was still running, so these are the previous read's figures. */
+  pending: boolean;
 };
 
 /**

@@ -58,6 +58,15 @@ body {
   outline-offset: 2px;
 }
 
+/*
+ * Print, which is also how a page is saved as a PDF — the Export button calls
+ * window.print() and the browser's own "Save as PDF" does the rest. Vector
+ * text, real pagination, and no dependency to keep current.
+ *
+ * The page is printed as it is read, minus the chrome: navigation, the period
+ * selector and the per-panel "Table" toggles all describe things you cannot do
+ * on paper.
+ */
 @media print {
   .no-print {
     display: none !important;
@@ -65,5 +74,37 @@ body {
 
   body {
     background: #ffffff;
+  }
+
+  /* Ink the charts actually need. Browsers drop background fills by default,
+     which would print every bar and every donut segment blank. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* A chart split down the middle by a page break is unreadable, and the title
+     landing alone at the foot of a page is worse. */
+  section,
+  [data-panel] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* On paper the width is the sheet's, not the viewport's. */
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  @page {
+    margin: 14mm;
   }
 }

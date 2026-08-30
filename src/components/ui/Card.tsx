@@ -8,13 +8,14 @@ export function Card({
   children,
   className = '',
   as: Tag = 'section',
+  ...rest
 }: {
   children: ReactNode;
   className?: string;
   as?: 'section' | 'div' | 'article';
-}) {
+} & Record<`data-${string}`, unknown>) {
   return (
-    <Tag className={`rounded-lg border border-outline-variant bg-surface-container-lowest ${className}`}>
+    <Tag {...rest} className={`rounded-lg border border-outline-variant bg-surface-container-lowest ${className}`}>
       {children}
     </Tag>
   );

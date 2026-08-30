@@ -244,6 +244,24 @@ export function useProgramSummary(pageKey: string | undefined, year?: number) {
     queryKey: keys.summary(pageKey ?? '', year),
     queryFn: () => api.summary(pageKey!, { year }),
     enabled: Boolean(pageKey),
+    /**
+     * A page fed by a sheet still being filled in keeps asking, so a figure
+     * changed in the sheet reaches an open page without anyone reloading it.
+     * The interval follows the source's own freshness window, and the server
+     * only re-reads Google when that window has actually elapsed — so this
+     * costs a cheap request, not a Sheets call, most times round.
+     *
+     * Every other page returns `live: null` and never polls.
+     */
+    refetchInterval: (query) => {
+      const live = query.state.data?.live;
+      if (!live) return false;
+      // A refresh that was still running when the page was built is worth
+      // waiting a few seconds for; anything else can wait for the window.
+      if (live.pending) return 8_000;
+      return Math.max(live.everyMinutes, 1) * 60_000;
+    },
+    refetchIntervalInBackground: false,
   });
 }
 

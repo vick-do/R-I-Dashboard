@@ -29,7 +29,9 @@ export function Panel({
   const tableId = useId();
 
   return (
-    <Card className={`flex flex-col p-card-padding ${className}`}>
+    // `data-panel` is the hook the print stylesheet uses to keep a chart and
+    // its title from being split across two pages.
+    <Card data-panel className={`flex flex-col p-card-padding ${className}`}>
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-card-title text-on-surface">{title}</h2>

@@ -138,6 +138,14 @@ export function CloseIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+export function SignInIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9 17l-5-5 5-5M4 12h11M13 3h5a2 2 0 012 2v14a2 2 0 01-2 2h-5" />
+    </svg>
+  );
+}
+
 export function SignOutIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
     <svg {...base} className={className}>

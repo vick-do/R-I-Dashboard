@@ -14,6 +14,12 @@ import { useAuth } from './lib/auth';
 /**
  * Real routes, so pages have URLs that can be bookmarked, shared, and reached
  * with the browser's back button.
+ *
+ * The reporting pages are public. Anyone can open the dashboard and read what
+ * MEST has done — the figures, the breakdowns, the whole tree — without an
+ * account, and the edit controls simply are not there for them. Operations
+ * pages, which are about the people and the machinery rather than the impact,
+ * still need signing in for.
  */
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -35,20 +41,17 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/invite/:token" element={<AcceptInvitePage />} />
-      <Route
-        element={
-          <RequireAuth>
-            <DashboardLayout />
-          </RequireAuth>
-        }
-      >
+      <Route element={<DashboardLayout />}>
+        {/* Public: the impact record. */}
         <Route path="/" element={<OverviewPage />} />
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/p/:pageKey" element={<ProgramPage />} />
-        <Route path="/approvals" element={<ApprovalsPage />} />
-        <Route path="/imports" element={<SheetsPage />} />
-        <Route path="/quality" element={<DataQualityPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+
+        {/* Staff only: people, provenance and the import machinery. */}
+        <Route path="/approvals" element={<RequireAuth><ApprovalsPage /></RequireAuth>} />
+        <Route path="/imports" element={<RequireAuth><SheetsPage /></RequireAuth>} />
+        <Route path="/quality" element={<RequireAuth><DataQualityPage /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

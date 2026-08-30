@@ -1,11 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { usePrograms, useProgramSummary, useScorecard, flattenPrograms } from '../../hooks/useData';
 import { useAuth } from '../../lib/auth';
 import { PeriodProvider, usePeriod } from '../../lib/period';
 import { Sidebar } from './Sidebar';
 import { PeriodSelector } from '../ui/PeriodSelector';
-import { BellIcon, ChevronRightIcon, CloseIcon, ExportIcon, MenuIcon, SignOutIcon } from '../ui/Icons';
+import { BellIcon, ChevronRightIcon, CloseIcon, ExportIcon, MenuIcon, SignInIcon, SignOutIcon } from '../ui/Icons';
 
 /**
  * The application shell: a fixed sidebar, a top bar carrying the breadcrumb and the global
@@ -24,7 +24,7 @@ export function DashboardLayout() {
           <div className="min-h-0 flex-1 overflow-y-auto">
             {isLoading ? <NavSkeleton /> : <Sidebar programs={programs} />}
           </div>
-          {user ? <UserRow name={user.fullName} role={user.role} onSignOut={() => void signOut()} /> : null}
+          {user ? <UserRow name={user.fullName} role={user.role} onSignOut={() => void signOut()} /> : <SignInRow />}
         </aside>
 
         {drawerOpen ? (
@@ -40,12 +40,12 @@ export function DashboardLayout() {
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <Sidebar programs={programs} onNavigate={() => setDrawerOpen(false)} />
               </div>
-              {user ? <UserRow name={user.fullName} role={user.role} onSignOut={() => void signOut()} /> : null}
+              {user ? <UserRow name={user.fullName} role={user.role} onSignOut={() => void signOut()} /> : <SignInRow />}
             </div>
           </div>
         ) : null}
 
-        <div className="lg:pl-64">
+        <div className="print:pl-0 lg:pl-64">
           <TopBar programs={programs} onOpenDrawer={() => setDrawerOpen(true)} />
           <main className="mx-auto max-w-[1440px] p-page-padding">
             <Outlet />
@@ -77,6 +77,30 @@ function Brand({ onClose }: { onClose?: () => void }) {
         </button>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * The foot of the sidebar for someone reading without an account.
+ *
+ * A public dashboard still needs a way in for the people who maintain it, and
+ * it should say plainly that reading takes nothing — otherwise a visitor reads
+ * "Sign in" as a wall rather than a staff door.
+ */
+function SignInRow() {
+  return (
+    <Link
+      to="/login"
+      className="flex items-center gap-3 border-t border-outline-variant px-4 py-4 text-on-surface-variant transition hover:bg-surface-variant hover:text-on-surface"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-variant text-on-surface-variant">
+        <SignInIcon />
+      </span>
+      <div className="min-w-0 leading-tight">
+        <p className="truncate text-body-text font-medium">Sign in</p>
+        <p className="truncate text-xs text-on-surface-muted">For the MEST team</p>
+      </div>
+    </Link>
   );
 }
 
@@ -187,12 +211,12 @@ function TopBar({
         <PeriodSelector years={years} value={year} onChange={setYear} />
         <button
           type="button"
-          disabled
-          title="Exports arrive with the next phase"
-          className="hidden items-center gap-2 rounded-md border border-outline-variant px-3 py-1.5 text-secondary-text font-medium text-on-surface-muted sm:flex"
+          onClick={() => window.print()}
+          title="Print this page, or save it as a PDF"
+          className="hidden items-center gap-2 rounded-md border border-outline-variant px-3 py-1.5 text-secondary-text font-medium text-on-surface-variant transition hover:bg-surface-variant hover:text-on-surface sm:flex"
         >
           <ExportIcon />
-          Export
+          Export PDF
         </button>
         <button
           type="button"
