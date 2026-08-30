@@ -31,14 +31,9 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-10">
       <div className="w-full max-w-[400px]">
-        <div className="mb-7 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-base font-bold text-on-primary">
-            M
-          </span>
-          <div className="leading-tight">
-            <p className="text-[17px] font-bold text-on-surface">MEST Impact</p>
-            <p className="text-secondary-text text-on-surface-muted">Research &amp; Impact</p>
-          </div>
+        <div className="mb-7">
+          <img src="/mest-logo.png" alt="MEST" width={300} height={49} className="h-6 w-auto" />
+          <p className="mt-2 text-secondary-text text-on-surface-muted">Research &amp; Impact</p>
         </div>
 
         <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-7">

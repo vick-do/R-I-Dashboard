@@ -130,8 +130,14 @@ export function useSheets() {
   return useQuery({ queryKey: keys.sheets, queryFn: () => api.sheets() });
 }
 
-export function useSubmissions(status = 'pending') {
-  return useQuery({ queryKey: keys.submissions(status), queryFn: () => api.submissions(status) });
+export function useSubmissions(status = 'pending', enabled = true) {
+  return useQuery({
+    queryKey: keys.submissions(status),
+    queryFn: () => api.submissions(status),
+    // The queue is staff-only. Asking for it as a public reader just earns a
+    // 401 on every page load.
+    enabled,
+  });
 }
 
 export function useReviewSubmission() {
@@ -256,9 +262,9 @@ export function useProgramSummary(pageKey: string | undefined, year?: number) {
     refetchInterval: (query) => {
       const live = query.state.data?.live;
       if (!live) return false;
-      // A refresh that was still running when the page was built is worth
-      // waiting a few seconds for; anything else can wait for the window.
-      if (live.pending) return 8_000;
+      // A read is in flight, so the new figures are seconds away. Long enough
+      // not to be a hot loop against the server, short enough to feel live.
+      if (live.pending) return 15_000;
       return Math.max(live.everyMinutes, 1) * 60_000;
     },
     refetchIntervalInBackground: false,

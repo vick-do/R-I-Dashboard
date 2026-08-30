@@ -32,7 +32,7 @@ export function Sidebar({ programs, onNavigate }: { programs: ProgramNode[]; onN
   const roots = programs.filter((p) => p.pageKey !== 'overview');
 
 
-  const { data: queue } = useSubmissions('pending');
+  const { data: queue } = useSubmissions('pending', can('editor'));
   const waiting = queue?.counts.total ?? 0;
 
   return (

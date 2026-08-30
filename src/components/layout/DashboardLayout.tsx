@@ -59,12 +59,21 @@ export function DashboardLayout() {
 function Brand({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex items-center gap-3 px-4 py-5">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-on-primary">
-        M
-      </span>
-      <div className="min-w-0 leading-tight">
-        <p className="truncate text-[17px] font-bold text-on-surface">MEST Impact</p>
-        <p className="truncate text-xs text-on-surface-muted">Research &amp; Impact</p>
+      <div className="min-w-0">
+        {/*
+          The wordmark already says MEST, so only what this particular thing is
+          sits under it. Height-constrained rather than width-constrained: the
+          logo is a 6:1 landscape lockup and letting it set its own width keeps
+          it from stretching when the drawer is narrower than the sidebar.
+        */}
+        <img
+          src="/mest-logo.png"
+          alt="MEST"
+          width={300}
+          height={49}
+          className="h-6 w-auto max-w-full"
+        />
+        <p className="mt-1.5 truncate text-xs text-on-surface-muted">Research &amp; Impact</p>
       </div>
       {onClose ? (
         <button
