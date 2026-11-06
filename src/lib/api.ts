@@ -1,7 +1,7 @@
 /**
  * Typed client for ri-api.
  */
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://r-i-backend.onrender.com/';
 
 const ACCESS_KEY = 'ri.accessToken';
 const REFRESH_KEY = 'ri.refreshToken';
@@ -229,6 +229,28 @@ export type MetricSummary = {
   programCount: number;
   breakdowns: Array<{ dimension: string; dimensions: string[]; rows: AggregateRow[] }>;
   trend: { groupBy: string | null; rows: AggregateRow[] } | null;
+};
+
+/**
+ * A figure a programme committed to, beside the one it recorded.
+ *
+ * `actual` is computed from the facts. `statedActual` is what the source wrote
+ * next to the target, kept separately because the two are not always the same
+ * and a page should be able to show that rather than pick one.
+ */
+export type ProgramTarget = {
+  label: string;
+  metricKey: string;
+  metricLabel: string;
+  unit: Unit;
+  currency?: string | null;
+  periodLabel: string;
+  year: number | null;
+  dimensions: Record<string, string>;
+  target: number;
+  actual: number | null;
+  statedActual: number | null;
+  sourceRef: string | null;
 };
 
 export type ProgramSummary = {
@@ -595,6 +617,9 @@ export const api = {
     request<{ metric: { key: string; label: string; unit: Unit }; groupBy: string[]; rows: AggregateRow[] }>(
       `/api/v1/facts/aggregate${qs(params)}`
     ),
+
+  targets: (pageKey: string) =>
+    request<{ targets: ProgramTarget[] }>(`/api/v1/insights/targets${qs({ program: pageKey })}`),
 
   byYear: (params: { program: string; metric: string }) =>
     request<{
