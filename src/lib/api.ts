@@ -1,7 +1,9 @@
 /**
  * Typed client for ri-api.
  */
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://r-i-backend.onrender.com/';
+// Trailing slashes are stripped: paths below start with "/", and a doubled
+// slash ("//api/v1/...") matches no route on the API.
+const BASE_URL = (import.meta.env.VITE_API_URL ?? 'https://r-i-backend.onrender.com').replace(/\/+$/, '');
 
 const ACCESS_KEY = 'ri.accessToken';
 const REFRESH_KEY = 'ri.refreshToken';
