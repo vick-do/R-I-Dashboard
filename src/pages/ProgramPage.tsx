@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useDimensions, useMetricByYear, useProgramSummary } from '../hooks/useData';
 import { errorMessage, isApiError, type Dimension, type MetricSummary } from '../lib/api';
 import { formatValue, humanise, shortPeriod } from '../lib/format';
-import { SERIES, canColourByCategory, seriesColor } from '../lib/chart';
+import { buildLabelIndex, type LabelIndex } from '../lib/labels';
+import { ALL_PAIRS_SAFE, SERIES, canColourByCategory, seriesColor } from '../lib/chart';
 import { useAuth } from '../lib/auth';
 import { usePeriod } from '../lib/period';
 import { PageHeader } from '../components/layout/DashboardLayout';
@@ -16,9 +17,9 @@ import { ColumnChart } from '../components/charts/ColumnChart';
 import { DonutChart } from '../components/charts/DonutChart';
 import { CompositionBar, CompositionLegend } from '../components/charts/CompositionBar';
 import { TrendLine } from '../components/charts/TrendLine';
+import { PairedBars, type PairedRow } from '../components/charts/PairedBars';
 import { RecordFigureDialog } from '../components/entry/RecordFigureDialog';
 import { RecordGrowCohortDialog } from '../components/entry/RecordGrowCohortDialog';
-import { LiveBadge } from '../components/ui/LiveBadge';
 
 const CATEGORY_LABELS: Record<string, string> = {
   people: 'People',
@@ -48,15 +49,30 @@ export function ProgramPage() {
 
   const metrics = summary.data?.metrics ?? [];
 
+  const confidence = useMemo(() => pairConfidence(metrics, labels), [metrics, labels]);
+
+  /**
+   * The figures that get a card.
+   *
+   * Skill confidence before and after drop out of the row while the panel
+   * below is showing them: two cards the reader has to subtract from each
+   * other, sitting above a chart that has already done the subtraction, is the
+   * same pair of numbers printed twice.
+   */
+  const carded = useMemo(
+    () => (confidence ? metrics.filter((m) => !CONFIDENCE_KEYS.includes(m.key)) : metrics),
+    [metrics, confidence]
+  );
+
   // Reset when the programme or period changes, so the selection can never
   // point at a metric that is no longer present.
   useEffect(() => {
-    if (metrics.length === 0) {
+    if (carded.length === 0) {
       setSelectedKey(null);
       return;
     }
-    if (selectedKey && metrics.some((m) => m.key === selectedKey)) return;
-    const lead = metrics.find((m) => detailCount(m) > 0) ?? metrics[0];
+    if (selectedKey && carded.some((m) => m.key === selectedKey)) return;
+    const lead = carded.find((m) => detailCount(m) > 0) ?? carded[0];
     setSelectedKey(lead.key);
     // Every page opens showing everything it reports, and the category filter
     // is there to narrow it. Opening narrowed hid the figures that were the
@@ -65,11 +81,11 @@ export function ProgramPage() {
     // matters survived contact with the tree — by count MEST X leads on social
     // media, which is not what MEST X is about.
     setCategory('all');
-  }, [pageKey, year, metrics.map((m) => m.key).join('|')]);
+  }, [pageKey, year, carded.map((m) => m.key).join('|')]);
 
   const groups = useMemo(() => {
     const byCategory = new Map<string, MetricSummary[]>();
-    for (const metric of metrics) {
+    for (const metric of carded) {
       const key = metric.category ?? 'other';
       if (!byCategory.has(key)) byCategory.set(key, []);
       byCategory.get(key)!.push(metric);
@@ -77,11 +93,11 @@ export function ProgramPage() {
     return [...byCategory.entries()].sort(
       (a, b) => CATEGORY_ORDER.indexOf(a[0]) - CATEGORY_ORDER.indexOf(b[0])
     );
-  }, [metrics]);
+  }, [carded]);
 
   const visible = useMemo(
-    () => (category === 'all' || !category ? metrics : metrics.filter((m) => (m.category ?? 'other') === category)),
-    [metrics, category]
+    () => (category === 'all' || !category ? carded : carded.filter((m) => (m.category ?? 'other') === category)),
+    [carded, category]
   );
 
   if (summary.isLoading) {
@@ -110,26 +126,30 @@ export function ProgramPage() {
     );
   }
 
-  const { program, rolledUp, live } = summary.data!;
-  const selected = metrics.find((m) => m.key === selectedKey) ?? null;
+  const { program, rolledUp } = summary.data!;
+  const selected = carded.find((m) => m.key === selectedKey) ?? null;
   const canEdit = can('editor');
 
   return (
     <div className="space-y-8">
+      {/*
+        A page says what it is about or says nothing. The two stock lines that
+        used to sit here — "Combined figures for every programme in this group"
+        and its sibling — were filler under every title that had no description
+        of its own, and a reader learns nothing from a sentence that is true of
+        forty pages. Where a programme has something to say, the catalog says it.
+
+        The sync badge has gone with them, by request. Whether a sheet could be
+        reached is on the Imports page, which is where it is acted on.
+      */}
       <PageHeader
         title={program.name}
-        subtitle={
-          program.description ??
-          (rolledUp
-            ? 'Combined figures for every programme in this group'
-            : 'Recorded impact figures for this programme')
-        }
+        subtitle={program.description ?? undefined}
         actions={
           <>
-            <LiveBadge live={live} />
             {/*
               Hidden where the connected sheet is the source of truth: Web3,
-              Pre-Mest, Hospitality and Doulogic are all recounted from their
+              Pre-Mest, Hospitality and DIGILOGIC are all recounted from their
               sheets on every sync, so a hand-typed figure there would be
               overwritten on the next one.
             */}
@@ -166,12 +186,12 @@ export function ProgramPage() {
                   onChange={(next) => {
                     setCategory(next);
                     // Keep the charts below in step with what is on screen.
-                    const inGroup = metrics.filter((m) => next === 'all' || (m.category ?? 'other') === next);
+                    const inGroup = carded.filter((m) => next === 'all' || (m.category ?? 'other') === next);
                     const lead = inGroup.find((m) => detailCount(m) > 0) ?? inGroup[0];
                     if (lead) setSelectedKey(lead.key);
                   }}
                   options={[
-                    { value: 'all', label: 'All figures', count: metrics.length },
+                    { value: 'all', label: 'All figures', count: carded.length },
                     ...groups.map(([key, group]) => ({
                       value: key,
                       label: CATEGORY_LABELS[key] ?? humanise(key),
@@ -195,6 +215,8 @@ export function ProgramPage() {
               ))}
             </div>
           </section>
+
+          {confidence ? <ConfidencePanel pair={confidence} labels={labels} /> : null}
 
           {selected ? <MetricDetail metric={selected} labels={labels} year={year} pageKey={pageKey} /> : null}
         </>
@@ -225,6 +247,98 @@ export function ProgramPage() {
 
 function detailCount(metric: MetricSummary) {
   return metric.breakdowns.length + (metric.trend?.rows.length ? 1 : 0);
+}
+
+const CONFIDENCE_BEFORE = 'skill_confidence_before';
+const CONFIDENCE_AFTER = 'skill_confidence_after';
+const CONFIDENCE_KEYS: string[] = [CONFIDENCE_BEFORE, CONFIDENCE_AFTER];
+
+type ConfidencePair = {
+  metric: MetricSummary;
+  /** The axis the pair is drawn along, or null when only the two totals exist. */
+  dimension: string | null;
+  rows: PairedRow[];
+};
+
+/**
+ * Matches the before and after figures up into one comparison.
+ *
+ * Keyed off the metrics rather than off the page, so any programme that comes
+ * to report both gets the comparison without another branch here.
+ */
+function pairConfidence(metrics: MetricSummary[], labels: LabelIndex): ConfidencePair | null {
+  const before = metrics.find((m) => m.key === CONFIDENCE_BEFORE);
+  const after = metrics.find((m) => m.key === CONFIDENCE_AFTER);
+  if (!before || !after) return null;
+
+  // An axis both of them record on. Two breakdowns along different axes
+  // cannot be paired row for row, whatever their labels suggest.
+  const shared = before.breakdowns
+    .filter((b) => b.dimensions.length === 1)
+    .map((b) => b.dimension)
+    .find((name) => after.breakdowns.some((b) => b.dimensions.length === 1 && b.dimension === name));
+
+  if (!shared) {
+    // No shared axis, but there is still the one comparison that matters.
+    if (before.total === null || after.total === null) return null;
+    return {
+      metric: after,
+      dimension: null,
+      rows: [{ name: 'Overall', before: before.total, after: after.total }],
+    };
+  }
+
+  const afterByValue = new Map(
+    after.breakdowns
+      .find((b) => b.dimensions.length === 1 && b.dimension === shared)!
+      .rows.map((row) => [row.dimensions[shared], row.value])
+  );
+
+  const rows = before.breakdowns
+    .find((b) => b.dimensions.length === 1 && b.dimension === shared)!
+    .rows
+    // Rated before the teaching but not after it: there is no pair to draw,
+    // and a lone bar beside an empty one reads as a collapse to zero.
+    .filter((row) => afterByValue.has(row.dimensions[shared]))
+    .map((row) => ({
+      name: labels.valueLabel(shared, row.dimensions[shared]),
+      before: row.value,
+      after: afterByValue.get(row.dimensions[shared])!,
+    }))
+    .sort((a, b) => b.after - a.after);
+
+  return rows.length ? { metric: after, dimension: shared, rows } : null;
+}
+
+function ConfidencePanel({ pair, labels }: { pair: ConfidencePair; labels: LabelIndex }) {
+  const { metric, dimension, rows } = pair;
+
+  return (
+    <Panel
+      title="Skill confidence, before and after"
+      subtitle={
+        dimension
+          ? `By ${labels.dimensionLabel(dimension).toLowerCase()}. Self-rated, averaged across every topic assessed.`
+          : 'Self-rated, averaged across every topic assessed.'
+      }
+      table={{
+        columns: [
+          { key: 'name', label: dimension ? labels.dimensionLabel(dimension) : 'Figure' },
+          { key: 'before', label: 'Before', align: 'right' },
+          { key: 'after', label: 'After', align: 'right' },
+          { key: 'change', label: 'Change', align: 'right' },
+        ],
+        rows: rows.map((row) => ({
+          name: row.name,
+          before: formatValue(row.before, metric),
+          after: formatValue(row.after, metric),
+          change: `${row.after - row.before >= 0 ? '+' : '−'}${Math.abs(row.after - row.before).toFixed(1)} pts`,
+        })),
+      }}
+    >
+      <PairedBars rows={rows} unit={metric} />
+    </Panel>
+  );
 }
 
 function MetricCard({
@@ -280,21 +394,9 @@ function MetricCard({
           >
             {metric.programCount} programmes
           </span>
-        ) : derived ? (
-          // A rate is averaged across its breakdown, not added up. Calling a
-          // satisfaction figure "summed" says the sheet reported 278%.
-          <span
-            title={`${metric.aggregation === 'avg' ? 'Averaged' : 'Summed'} across ${metric.derivedFrom
-              ?.map((d) => labels.dimensionLabel(d).toLowerCase())
-              .join(' × ')}`}
-          >
-            {metric.aggregation === 'avg' ? 'averaged' : 'summed'}
-          </span>
         ) : hasDetail ? (
           selected ? 'Showing' : 'View breakdown'
-        ) : (
-          'Overall figure only'
-        )}
+        ) : null}
       </span>
     </button>
   );
@@ -315,18 +417,20 @@ function MetricDetail({
 
   // A breakdown along the dimension the trend already splits by shows the same
   // numbers with time collapsed out.
-  const breakdowns = metric.breakdowns.filter((b) => !(hasTrend && b.dimension === metric.trend?.groupBy));
+  const breakdowns = metric.breakdowns
+    .filter((b) => !(hasTrend && b.dimension === metric.trend?.groupBy))
+    .filter((b) => !b.dimensions.some((d) => HIDDEN_BREAKDOWNS.includes(d)))
+    // Gender leads, wherever it appears and whatever it is paired with. It is
+    // the cut these programmes are reported and funded against, so it should
+    // not be something a reader scrolls to find. `sort` is stable, so
+    // everything else keeps the order the API sent.
+    .slice()
+    .sort((x, y) => genderRank(x) - genderRank(y));
 
-  if (!hasTrend && breakdowns.length === 0) {
-    return (
-      <Card>
-        <EmptyState
-          title={`${formatValue(metric.total, metric)} ${metric.label.toLowerCase()}, with no breakdown behind it`}
-          hint="Only an overall figure is recorded for this metric. Record it against a hub, gender or cohort and the split appears here."
-        />
-      </Card>
-    );
-  }
+  // A figure with nothing behind it gets no panel. An empty card explaining
+  // its own emptiness is a row of screen that tells the reader nothing they
+  // could not see from the card they just clicked.
+  if (!hasTrend && breakdowns.length === 0) return null;
 
   return (
     <section aria-label={`${metric.label} detail`} className="space-y-card-gap">
@@ -354,6 +458,27 @@ function MetricDetail({
  * The form is chosen from the dimension itself, not from its position on the page.
  */
 const MAX_BARS = 10;
+
+const GENDER = 'gender';
+
+/**
+ * Axes that get no panel of their own here.
+ *
+ * `platform` is EdTech Mondays' second count of one season — the same figures
+ * the channel breakdown already shows, grouped the other way — and as a chart
+ * it says nothing: Facebook carries 13.3M of 13.4M impressions, so the panel
+ * is one full-height bar beside four slivers. It is shown properly, as cards
+ * with their own figures, on the EdTech Mondays page.
+ *
+ * `company` is a roster rather than an axis. The portfolio's ninety-seven
+ * ventures are one enterprise each, so charting them draws ninety-seven bars
+ * of identical length — a list that has learnt to look like a chart. The names
+ * are worth showing; they are worth showing as names.
+ */
+const HIDDEN_BREAKDOWNS = ['platform', 'company'];
+
+const genderRank = (breakdown: MetricSummary['breakdowns'][number]) =>
+  breakdown.dimensions.includes(GENDER) ? 0 : 1;
 
 /** The one programme with a purpose-built entry form. */
 const GROW_PAGE_KEY = 'digital-skills-grow';
@@ -477,7 +602,16 @@ function BreakdownPanel({
         <DonutChart slices={data} unit={metric} centerLabel={dimensionLabel.toLowerCase()} />
       ) : form === 'columns' ? (
         <ColumnChart
-          columns={[...data].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))}
+          /*
+            An ordered axis keeps its own order — cohort 3 belongs between 2
+            and 4 whatever it scored. Anything else reads largest first, so
+            the heights descend and the answer is the leftmost column.
+          */
+          columns={
+            labels.isOrdered(dimension)
+              ? [...data].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+              : [...data].sort((a, b) => b.value - a.value)
+          }
           unit={metric}
         />
       ) : form === 'share' ? (
@@ -542,22 +676,62 @@ function CrossBreakdownPanel({
     );
   }
 
-  const [groupBy, segmentBy] = distinct(a) <= distinct(b) ? [a, b] : [b, a];
+  const [fewer, more] = distinct(a) <= distinct(b) ? [a, b] : [b, a];
 
-  const groups = new Map<string, { name: string; total: number; segments: Array<{ label: string; value: number; share: number | null }> }>();
+  /**
+   * Two ways to draw the same cross-tab, and the narrow axis decides which.
+   *
+   * A split into two or three parts — gender, most obviously — is a
+   * part-to-whole of each row: every enterprise is counted once, under one
+   * gender, so the parts make the row's total. That draws as one stacked bar
+   * per row, where length is the total and the segments are the split. Five
+   * rows of that is a chart the height of a paragraph.
+   *
+   * The alternative — a small-multiple column chart per value of the narrow
+   * axis — spends a panel and a hue on every column, which is the right shape
+   * for a wide unordered axis and far too much furniture for a gender split.
+   *
+   * Held to metrics that add up. Stacking averages would draw three
+   * satisfaction scores end to end and call the result a total.
+   */
+  const stacked =
+    metric.aggregation === 'sum' && distinct(fewer) > 1 && distinct(fewer) <= ALL_PAIRS_SAFE;
+
+  // Stacked, the narrow axis is the colour and the wide one the rows. Otherwise
+  // the narrow axis panels the chart, as before.
+  const [groupBy, segmentBy] = stacked ? [more, fewer] : [fewer, more];
+
+  const groups = new Map<
+    string,
+    { key: string; name: string; total: number; segments: Array<{ label: string; value: number; share: number | null }> }
+  >();
   for (const row of breakdown.rows) {
     const groupKey = row.dimensions[groupBy];
     const name = labels.valueLabel(groupBy, groupKey);
-    if (!groups.has(name)) groups.set(name, { name, total: 0, segments: [] });
+    if (!groups.has(name)) groups.set(name, { key: groupKey, name, total: 0, segments: [] });
     const group = groups.get(name)!;
     group.total += row.value;
     group.segments.push({ label: labels.valueLabel(segmentBy, row.dimensions[segmentBy]), value: row.value, share: null });
   }
 
-  const rows = [...groups.values()].map((g) => ({
-    ...g,
-    segments: g.segments.map((s) => ({ ...s, share: g.total ? s.value / g.total : null })),
-  })).sort((x, y) => y.total - x.total);
+  /**
+   * An axis with an order of its own keeps it: cohort 1 reads above cohort 2,
+   * whichever of them turned out larger. Ranking those by size asks the reader
+   * to find the sequence for themselves before they can follow it, and hides
+   * the one thing a cohort axis is for — whether the programme is growing.
+   *
+   * Everything else still leads with its largest.
+   */
+  const rows = [...groups.values()]
+    .map((g) => ({
+      ...g,
+      segments: g.segments.map((s) => ({ ...s, share: g.total ? s.value / g.total : null })),
+    }))
+    .sort((x, y) =>
+      labels.isOrdered(groupBy)
+        ? labels.valueSlot(groupBy, x.key) - labels.valueSlot(groupBy, y.key)
+        : y.total - x.total
+    );
 
   const legend = [...new Set(breakdown.rows.map((r) => r.dimensions[segmentBy]))]
     .sort((x, y) => labels.valueSlot(segmentBy, x) - labels.valueSlot(segmentBy, y))
@@ -631,6 +805,18 @@ function CrossBreakdownPanel({
     >
 {isFiltered ? (
         <BarList rows={filteredRows} unit={metric} scale="max" />
+      ) : stacked ? (
+        <div className="flex flex-col gap-4">
+          {/* Rows are drawn to their own totals, so length compares the groups
+              while the segments compare the split inside each one. */}
+          <CompositionBar
+            rows={rows}
+            legend={legend}
+            unit={metric}
+            max={Math.max(...rows.map((r) => r.total), 0) || 1}
+          />
+          <CompositionLegend legend={legend} />
+        </div>
       ) : (
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => {
@@ -752,43 +938,6 @@ function TrendPanel({ metric, labels }: { metric: MetricSummary; labels: LabelIn
     >
       <TrendLine data={data} seriesKeys={seriesKeys} unit={metric} />    </Panel>
   );
-}
-
-type LabelIndex = {
-  dimensionLabel: (name: string) => string;
-  valueLabel: (dimension: string, value: string | undefined) => string;
-  valueSlot: (dimension: string, value: string | undefined) => number;
-  isClosed: (dimension: string) => boolean;
-  /** True when the values form a sequence — cohorts, tiers, years. */
-  isOrdered: (dimension: string) => boolean;
-};
-
-function buildLabelIndex(dimensions: Dimension[]): LabelIndex {
-  const byName = new Map(dimensions.map((d) => [d.name, d]));
-
-  const sortedValues = (dimension: string) =>
-    [...(byName.get(dimension)?.values ?? [])].sort((a, b) => a.order - b.order);
-
-  return {
-    dimensionLabel: (name) => byName.get(name)?.label ?? humanise(name),
-    valueLabel: (dimension, value) => {
-      if (!value) return 'Unspecified';
-      const match = byName.get(dimension)?.values.find((v) => v.value === value);
-      return match?.label ?? humanise(value);
-    },
-    valueSlot: (dimension, value) => {
-      if (!value) return 0;
-      const index = sortedValues(dimension).findIndex((v) => v.value === value);
-      return index === -1 ? 0 : index;
-    },
-    isClosed: (dimension) => byName.get(dimension)?.isClosed ?? false,
-    // Numeric values mean the axis is a sequence, so position can carry order
-    // and a column chart says more than a ranked bar.
-    isOrdered: (dimension) => {
-      const values = byName.get(dimension)?.values ?? [];
-      return values.length > 0 && values.every((v) => /^\d+$/.test(v.value));
-    },
-  };
 }
 
 /**

@@ -111,6 +111,14 @@ export function useFunnel(year?: number) {
 
 /** Where the recorded data disagrees with itself. */
 /** One metric split across whole years, for the trend column chart. */
+export function useTargets(pageKey: string | undefined) {
+  return useQuery({
+    queryKey: ['targets', pageKey],
+    queryFn: () => api.targets(pageKey!),
+    enabled: Boolean(pageKey),
+  });
+}
+
 export function useMetricByYear(program: string | undefined, metric: string | undefined) {
   return useQuery({
     queryKey: keys.byPeriod(program ?? '', metric ?? ''),

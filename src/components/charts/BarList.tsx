@@ -1,4 +1,5 @@
 import { CHART_INK, MUTED_MARK, seriesColor } from '../../lib/chart';
+import { HoverTooltip, useHoverTooltip } from './Tooltip';
 import { formatValue, type Measure } from '../../lib/format';
 
 export type BarRow = {
@@ -44,7 +45,10 @@ export function BarList({
   const basis =
     scale === 'total' ? total || 1 : Math.max(...rows.map((r) => r.value), 0) || 1;
 
+  const { frame, hovered, track, clear } = useHoverTooltip<BarRow>();
+
   return (
+    <div ref={frame} className="relative">
     <ul className="flex flex-col gap-4">
       {rows.map((row) => {
         const dimmed = Boolean(highlight) && row.name !== highlight;
@@ -88,7 +92,7 @@ export function BarList({
         );
 
         return (
-          <li key={row.name}>
+          <li key={row.name} onMouseMove={track(row)} onMouseLeave={clear}>
             {onSelect ? (
               <button
                 type="button"
@@ -104,5 +108,16 @@ export function BarList({
         );
       })}
     </ul>
+
+      {hovered ? (
+        <HoverTooltip
+          at={hovered}
+          title={hovered.data.name}
+          value={hovered.data.value}
+          share={hovered.data.share ?? (total ? hovered.data.value / total : null)}
+          unit={unit}
+        />
+      ) : null}
+    </div>
   );
 }

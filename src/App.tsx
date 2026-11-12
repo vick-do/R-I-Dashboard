@@ -1,9 +1,12 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { LoginPage } from './pages/LoginPage';
 import { AcceptInvitePage } from './pages/AcceptInvitePage';
 import { OverviewPage } from './pages/OverviewPage';
 import { ProgramPage } from './pages/ProgramPage';
+import { EdTechMondaysPage, EDTECH_PAGE_KEY } from './pages/EdTechMondaysPage';
+import { EdTechFellowshipPage, FELLOWSHIP_PAGE_KEY } from './pages/EdTechFellowshipPage';
+import { PortfolioPage, PORTFOLIO_PAGE_KEY } from './pages/PortfolioPage';
 import { ComparePage } from './pages/ComparePage';
 import { DataQualityPage } from './pages/DataQualityPage';
 import { SheetsPage } from './pages/SheetsPage';
@@ -36,6 +39,29 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+/**
+ * One programme reports something the shared template does not fit.
+ *
+ * EdTech Mondays is a broadcasting season — ten measures of one audience,
+ * counted by channel and again by platform — and reads as a monthly report.
+ * The EdTech Fellowship reports every audience several ways over and carries
+ * targets it was funded against, which the shared template has no place for.
+ * The Portfolio counts companies rather than people, and most of its tab is
+ * three rosters of names. Year pages stay on the shared template, which is
+ * what they are: one year of the same thing.
+ */
+const BESPOKE: Record<string, () => JSX.Element> = {
+  [EDTECH_PAGE_KEY]: EdTechMondaysPage,
+  [FELLOWSHIP_PAGE_KEY]: EdTechFellowshipPage,
+  [PORTFOLIO_PAGE_KEY]: PortfolioPage,
+};
+
+function ProgramRoute() {
+  const { pageKey } = useParams<{ pageKey: string }>();
+  const Bespoke = pageKey ? BESPOKE[pageKey] : undefined;
+  return Bespoke ? <Bespoke /> : <ProgramPage />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -45,7 +71,7 @@ export default function App() {
         {/* Public: the impact record. */}
         <Route path="/" element={<OverviewPage />} />
         <Route path="/compare" element={<ComparePage />} />
-        <Route path="/p/:pageKey" element={<ProgramPage />} />
+        <Route path="/p/:pageKey" element={<ProgramRoute />} />
 
         {/* Staff only: people, provenance and the import machinery. */}
         <Route path="/approvals" element={<RequireAuth><ApprovalsPage /></RequireAuth>} />

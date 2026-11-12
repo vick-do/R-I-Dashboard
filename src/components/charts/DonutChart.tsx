@@ -1,4 +1,5 @@
 import { seriesColor } from '../../lib/chart';
+import { HoverTooltip, useHoverTooltip } from './Tooltip';
 import { formatValue, type Measure } from '../../lib/format';
 
 export type DonutSlice = {
@@ -23,6 +24,9 @@ const GAP = 2.5;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const MAX_SLICES = 6;
 
+/** A slice once its geometry and colour have been worked out. */
+type Arc = DonutSlice & { share: number; color: string; dash: number; offset: number };
+
 export function DonutChart({
   slices,
   unit = 'count',
@@ -36,6 +40,9 @@ export function DonutChart({
   /** Ring only, no legend — for a set of small multiples that share one. */
   compact?: boolean;
 }) {
+  // Before the empty-ring guard below, so the hook runs on every render.
+  const { frame, hovered, track, clear } = useHoverTooltip<Arc>();
+
   // With explicit slots the arc order follows them, so the same category sits
   // in the same place in every ring of a set.
   const hasSlots = slices.some((s) => s.slot !== undefined);
@@ -76,10 +83,11 @@ export function DonutChart({
 
   return (
     <div
+      ref={frame}
       className={
         compact
-          ? 'flex flex-col items-center gap-2'
-          : 'flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8'
+          ? 'relative flex flex-col items-center gap-2'
+          : 'relative flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8'
       }
     >
       <svg
@@ -103,9 +111,9 @@ export function DonutChart({
               strokeWidth={STROKE}
               strokeDasharray={`${arc.dash} ${CIRCUMFERENCE - arc.dash}`}
               strokeDashoffset={arc.offset}
-            >
-              <title>{`${arc.name}: ${formatValue(arc.value, unit)} (${(arc.share * 100).toFixed(1)}%)`}</title>
-            </circle>
+              onMouseMove={track(arc)}
+              onMouseLeave={clear}
+            />
           ))}
         </g>
 
@@ -131,7 +139,14 @@ export function DonutChart({
       {compact ? null : (
       <ul className="flex w-full min-w-0 flex-col gap-3">
         {arcs.map((arc) => (
-          <li key={arc.name} className="flex items-baseline gap-2.5">
+          // The legend rows answer to the pointer too, so a slice too thin
+          // to aim at can still be read.
+          <li
+            key={arc.name}
+            onMouseMove={track(arc)}
+            onMouseLeave={clear}
+            className="flex cursor-default items-baseline gap-2.5"
+          >
             <span
               aria-hidden="true"
               className="relative top-[3px] h-2.5 w-2.5 shrink-0 rounded-sm"
@@ -158,6 +173,16 @@ export function DonutChart({
         ))}
       </ul>
       )}
+
+      {hovered ? (
+        <HoverTooltip
+          at={hovered}
+          title={hovered.data.name}
+          value={hovered.data.value}
+          share={hovered.data.share}
+          unit={unit}
+        />
+      ) : null}
     </div>
   );
 }
